@@ -17,10 +17,8 @@ export default function Footer() {
               alt="Cynocyte"
               className="h-6 w-6 hidden dark:block"
             />
-            <span className="text-sm text-[var(--text-secondary)]">
-              <span className="font-semibold text-[var(--text-primary)]">Cynocyte Systems</span>
-              {' '}— Built by{' '}
-              <span className="font-semibold text-[var(--text-primary)]">Swarnadeep Mukherjee</span>
+            <span className="text-sm font-semibold text-[var(--text-primary)]">
+              Cynocyte
             </span>
           </div>
 
@@ -76,7 +74,7 @@ export default function Footer() {
 
         <div className="mt-8 pt-8 border-t border-[var(--border-color)] text-center">
           <p className="text-xs text-[var(--text-secondary)]">
-            &copy; {new Date().getFullYear()} Cynocyte Systems. Built by Swarnadeep Mukherjee. All rights reserved.
+            &copy; {new Date().getFullYear()} Cynocyte.
           </p>
         </div>
       </div>

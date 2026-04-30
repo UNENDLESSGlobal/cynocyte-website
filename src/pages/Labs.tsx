@@ -59,15 +59,15 @@ export default function Labs() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       <SEO
-        title="Cynocyte Play Labs — 55 Interactive AI Experiments | Cynocyte Systems by Swarnadeep Mukherjee"
-        description="Explore 55 interactive AI experiments by Cynocyte Systems, developed by Swarnadeep Mukherjee: hand tracking, face detection, pose estimation, music synthesis, and more. Run entirely in your browser."
+        title="Cynocyte Play Labs — 55 Interactive AI Experiments | Cynocyte"
+        description="Explore 55 interactive AI experiments powered by Cynocyte Systems: hand tracking, face detection, pose estimation, music synthesis, and more. Run entirely in your browser."
         canonicalUrl="https://cynocyte.vercel.app/labs"
         ogImage="https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
-        keywords="Cynocyte, Cynocyte Systems, Swarnadeep Mukherjee, Play Labs, AI experiments, hand tracking, face detection, pose estimation, music synthesis, computer vision, interactive AI"
+        keywords="Cynocyte, Cynocyte Systems, Play Labs, AI experiments, hand tracking, face detection, pose estimation, music synthesis, computer vision, interactive AI"
       />
       <BreadcrumbSchema
         items={[
-          { name: 'Cynocyte Systems', url: 'https://cynocyte.vercel.app' },
+          { name: 'Cynocyte', url: 'https://cynocyte.vercel.app' },
           { name: 'Play Labs', url: 'https://cynocyte.vercel.app/labs' },
         ]}
       />

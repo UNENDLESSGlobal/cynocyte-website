@@ -14,15 +14,15 @@ export default function Home() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       <SEO
-        title="Cynocyte Systems — Intelligent Products & Experimental AI Platforms | by Swarnadeep Mukherjee"
-        description="Cynocyte Systems builds intelligent products and experimental AI platforms. Developed by Swarnadeep Mukherjee. Discover Cynocyte Play Labs: 55+ interactive AI experiments using computer vision and hand tracking, running entirely in your browser."
+        title="Cynocyte — Intelligent Products & Experimental AI Platforms"
+        description="Cynocyte builds intelligent products and experimental AI platforms. Powered by Cynocyte Systems, the interactive infrastructure division. Discover Cynocyte Play Labs: 55+ interactive AI experiments using computer vision and hand tracking, running entirely in your browser."
         canonicalUrl="https://cynocyte.vercel.app"
         ogImage="https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
-        keywords="Cynocyte, Cynocyte Systems, Swarnadeep Mukherjee, AI experiments, Play Labs, computer vision, hand tracking, face detection, pose estimation, interactive AI, MediaPipe, browser experiments"
+        keywords="Cynocyte, Cynocyte Systems, AI experiments, Play Labs, computer vision, hand tracking, face detection, pose estimation, interactive AI, MediaPipe, browser experiments"
       />
       <BreadcrumbSchema
         items={[
-          { name: 'Cynocyte Systems', url: 'https://cynocyte.vercel.app' },
+          { name: 'Cynocyte', url: 'https://cynocyte.vercel.app' },
         ]}
       />
       <OrganizationSchema />

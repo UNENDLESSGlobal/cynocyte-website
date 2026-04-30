@@ -3,7 +3,9 @@ import { Helmet } from 'react-helmet-async'
 /**
  * PersonSchema Component
  * Outputs JSON-LD structured data for "Swarnadeep Mukherjee" as the
- * founder and developer of Cynocyte Systems. Crucial for name ranking.
+ * founder of Cynocyte (the primary organization).
+ * 
+ * INVISIBLE SEO: This component renders NO visible DOM — only JSON-LD in <head>.
  */
 export default function PersonSchema() {
   const personData = {
@@ -12,11 +14,11 @@ export default function PersonSchema() {
     name: 'Swarnadeep Mukherjee',
     jobTitle: 'Founder & Developer',
     description:
-      'Swarnadeep Mukherjee is the founder and developer of Cynocyte Systems, building intelligent products and experimental AI platforms.',
+      'Swarnadeep Mukherjee is the founder and developer of Cynocyte, building intelligent products and experimental AI platforms.',
     url: 'https://cynocyte.vercel.app/about',
     worksFor: {
       '@type': 'Organization',
-      name: 'Cynocyte Systems',
+      name: 'Cynocyte',
       url: 'https://cynocyte.vercel.app',
     },
     knowsAbout: [

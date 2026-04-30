@@ -12,15 +12,15 @@ export default function About() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       <SEO
-        title="About Swarnadeep Mukherjee — Developer of Cynocyte Systems"
-        description="Learn about Swarnadeep Mukherjee, the developer and founder of Cynocyte Systems. Discover Cynocyte Play Labs: 55 browser-based AI experiments using MediaPipe, Three.js, and Tone.js. Developed by Swarnadeep Mukherjee."
+        title="About Cynocyte | Cynocyte"
+        description="Learn about Cynocyte and its interactive infrastructure division, Cynocyte Systems. Discover Cynocyte Play Labs: 55 browser-based AI experiments using MediaPipe, Three.js, and Tone.js."
         canonicalUrl="https://cynocyte.vercel.app/about"
         ogImage="https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
-        keywords="Swarnadeep Mukherjee, Cynocyte Systems, Cynocyte, Play Labs, AI experiments, computer vision, hand tracking, browser-based AI, MediaPipe, educational AI, developer"
+        keywords="Cynocyte, Cynocyte Systems, Play Labs, AI experiments, computer vision, hand tracking, browser-based AI, MediaPipe, educational AI"
       />
       <BreadcrumbSchema
         items={[
-          { name: 'Cynocyte Systems', url: 'https://cynocyte.vercel.app' },
+          { name: 'Cynocyte', url: 'https://cynocyte.vercel.app' },
           { name: 'About', url: 'https://cynocyte.vercel.app/about' },
         ]}
       />
@@ -36,24 +36,20 @@ export default function About() {
           >
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm font-medium text-[var(--accent-color)] mb-6">
               <Hexagon className="w-4 h-4" />
-              About the Developer
+              About Cynocyte
             </span>
             <h1
               className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6"
               style={{ fontFamily: 'Space Grotesk, sans-serif' }}
             >
-              <span className="accent-gradient-text">Swarnadeep Mukherjee</span>
+              The Future{' '}
+              <span className="accent-gradient-text">Plays Here</span>
             </h1>
-            <p
-              className="text-xl sm:text-2xl font-semibold text-[var(--text-primary)] mb-4"
-              style={{ fontFamily: 'Space Grotesk, sans-serif' }}
-            >
-              Founder & Developer of Cynocyte Systems
-            </p>
             <p className="text-lg sm:text-xl text-[var(--text-secondary)] leading-relaxed max-w-2xl">
               Cynocyte Play Labs is a collection of 55 browser-based AI experiments that run entirely
               on your device. No downloads, no sign-ups, no API keys — just your camera, microphone,
-              and curiosity. Built by Swarnadeep Mukherjee as part of Cynocyte Systems.
+              and curiosity. Cynocyte Systems operates as an interactive computer vision infrastructure
+              division under Cynocyte.
             </p>
           </motion.div>
         </section>
@@ -78,8 +74,8 @@ export default function About() {
               },
               {
                 icon: ExternalLink,
-                title: 'Built by Swarnadeep Mukherjee',
-                desc: 'Cynocyte Play Labs is an experimental initiative by Cynocyte Systems, developed by Swarnadeep Mukherjee, focused on intelligent products and AI-powered platforms.',
+                title: 'Powered by Cynocyte Systems',
+                desc: 'Cynocyte Play Labs is an experimental initiative powered by Cynocyte Systems, the interactive infrastructure division of Cynocyte, focused on intelligent products and AI-powered platforms.',
               },
             ].map((item, i) => (
               <motion.div
@@ -147,7 +143,7 @@ export default function About() {
             className="text-center"
           >
             <p className="text-sm text-[var(--text-secondary)]">
-              Cynocyte Play Labs is an experimental project by Cynocyte Systems, developed by Swarnadeep Mukherjee. Results may vary by device and browser.
+              Cynocyte Play Labs is an experimental project by Cynocyte. Results may vary by device and browser.
               For the best experience, use Chrome or Edge on a desktop or laptop with a webcam.
             </p>
           </motion.div>

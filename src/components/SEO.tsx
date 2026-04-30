@@ -16,16 +16,16 @@ interface SEOProps {
  * SEO Component
  * Manages metadata for page optimization across all pages.
  * Uses react-helmet-async to update document head.
- * Default title format: [Page Name] | Cynocyte Systems by Swarnadeep Mukherjee
+ * Title format: [Page Name] | Cynocyte
  */
 export default function SEO({
-  title = 'Cynocyte Systems — Intelligent Products & Experimental Platforms | by Swarnadeep Mukherjee',
-  description = 'Cynocyte Systems builds intelligent products and experimental AI platforms. Developed by Swarnadeep Mukherjee. Explore Cynocyte Play Labs for 55 AI-powered browser experiments running on your device.',
+  title = 'Cynocyte — Intelligent Products & Experimental Platforms',
+  description = 'Cynocyte builds intelligent products and experimental AI platforms. Powered by Cynocyte Systems, the interactive infrastructure division. Explore Cynocyte Play Labs for 55 AI-powered browser experiments running on your device.',
   canonicalUrl = 'https://cynocyte.vercel.app',
   ogImage = 'https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png',
   ogType = 'website',
-  keywords = 'Cynocyte, Cynocyte Systems, Swarnadeep Mukherjee, AI experiments, computer vision, hand tracking, face detection, pose estimation, interactive AI, Play Labs, browser experiments, web AI, MediaPipe',
-  author = 'Swarnadeep Mukherjee',
+  keywords = 'Cynocyte, Cynocyte Systems, AI experiments, computer vision, hand tracking, face detection, pose estimation, interactive AI, Play Labs, browser experiments, web AI, MediaPipe',
+  author = 'Cynocyte',
   twitterCard = 'summary_large_image',
   children,
 }: SEOProps) {
@@ -49,7 +49,7 @@ export default function SEO({
       <meta property="og:image" content={ogImage} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:site_name" content="Cynocyte Systems" />
+      <meta property="og:site_name" content="Cynocyte" />
       
       {/* Twitter Card Tags */}
       <meta name="twitter:card" content={twitterCard} />
