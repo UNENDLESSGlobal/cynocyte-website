@@ -18,10 +18,9 @@ export default function Footer() {
               className="h-6 w-6 hidden dark:block"
             />
             <span className="text-sm text-[var(--text-secondary)]">
-              Built by{' '}
-              <span className="font-semibold text-[var(--text-primary)]">Cynocyte</span>
-              {' '}— A division of{' '}
-              <span className="font-semibold text-[var(--text-primary)]">Unendless</span>
+              <span className="font-semibold text-[var(--text-primary)]">Cynocyte Systems</span>
+              {' '}— Built by{' '}
+              <span className="font-semibold text-[var(--text-primary)]">Swarnadeep Mukherjee</span>
             </span>
           </div>
 
@@ -77,7 +76,7 @@ export default function Footer() {
 
         <div className="mt-8 pt-8 border-t border-[var(--border-color)] text-center">
           <p className="text-xs text-[var(--text-secondary)]">
-            &copy; {new Date().getFullYear()} Cynocyte. All rights reserved.
+            &copy; {new Date().getFullYear()} Cynocyte Systems. Built by Swarnadeep Mukherjee. All rights reserved.
           </p>
         </div>
       </div>

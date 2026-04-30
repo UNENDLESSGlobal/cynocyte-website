@@ -102,11 +102,11 @@ export default function ExperimentDetail() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       <SEO
-        title={`${experiment.title} — Cynocyte Play Labs AI Experiment`}
-        description={`${experiment.description} Interactive ${experiment.category} experiment from Cynocyte Play Labs.`}
+        title={`${experiment.title} — Cynocyte Play Labs | Cynocyte Systems by Swarnadeep Mukherjee`}
+        description={`${experiment.description} Interactive ${experiment.category} experiment from Cynocyte Play Labs, developed by Swarnadeep Mukherjee at Cynocyte Systems.`}
         canonicalUrl={`https://cynocyte.vercel.app/labs/${experiment.id}`}
         ogImage="https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
-        keywords={`${experiment.title}, ${experiment.category}, Cynocyte, AI experiments, Play Labs, ${experiment.tagline}`}
+        keywords={`${experiment.title}, ${experiment.category}, Cynocyte, Cynocyte Systems, Swarnadeep Mukherjee, AI experiments, Play Labs, ${experiment.tagline}`}
       />
       <BreadcrumbSchema
         items={[

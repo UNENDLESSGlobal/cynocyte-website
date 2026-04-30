@@ -39,7 +39,7 @@ export default function ExperimentStructuredData({
     },
     author: {
       '@type': 'Organization',
-      name: 'Cynocyte',
+      name: 'Cynocyte Systems',
       url: 'https://cynocyte.vercel.app',
       logo: 'https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png',
     },
