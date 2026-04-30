@@ -104,15 +104,15 @@ export default function ExperimentDetail() {
       <SEO
         title={`${experiment.title} — Cynocyte Play Labs AI Experiment`}
         description={`${experiment.description} Interactive ${experiment.category} experiment from Cynocyte Play Labs.`}
-        canonicalUrl={`https://cynocyte.com/labs/${experiment.id}`}
-        ogImage="https://cynocyte.com/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
+        canonicalUrl={`https://cynocyte.vercel.app/labs/${experiment.id}`}
+        ogImage="https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
         keywords={`${experiment.title}, ${experiment.category}, Cynocyte, AI experiments, Play Labs, ${experiment.tagline}`}
       />
       <BreadcrumbSchema
         items={[
-          { name: 'Home', url: 'https://cynocyte.com' },
-          { name: 'Play Labs', url: 'https://cynocyte.com/labs' },
-          { name: experiment.title, url: `https://cynocyte.com/labs/${experiment.id}` },
+          { name: 'Home', url: 'https://cynocyte.vercel.app' },
+          { name: 'Play Labs', url: 'https://cynocyte.vercel.app/labs' },
+          { name: experiment.title, url: `https://cynocyte.vercel.app/labs/${experiment.id}` },
         ]}
       />
       <ExperimentStructuredData

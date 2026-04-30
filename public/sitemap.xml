@@ -3,7 +3,7 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <!-- Home Page -->
   <url>
-    <loc>https://cynocyte.com</loc>
+    <loc>https://cynocyte.vercel.app</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
@@ -11,13 +11,13 @@
 
   <!-- Main Pages -->
   <url>
-    <loc>https://cynocyte.com/labs</loc>
+    <loc>https://cynocyte.vercel.app/labs</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://cynocyte.com/about</loc>
+    <loc>https://cynocyte.vercel.app/about</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -25,91 +25,91 @@
 
   <!-- Experiment Pages (Sample - Update with actual experiment IDs) -->
   <url>
-    <loc>https://cynocyte.com/labs/web-shooter</loc>
+    <loc>https://cynocyte.vercel.app/labs/web-shooter</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cynocyte.com/labs/theremin-air-synth</loc>
+    <loc>https://cynocyte.vercel.app/labs/theremin-air-synth</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cynocyte.com/labs/bubble-popper</loc>
+    <loc>https://cynocyte.vercel.app/labs/bubble-popper</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cynocyte.com/labs/finger-lightsaber</loc>
+    <loc>https://cynocyte.vercel.app/labs/finger-lightsaber</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cynocyte.com/labs/color-stealer</loc>
+    <loc>https://cynocyte.vercel.app/labs/color-stealer</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cynocyte.com/labs/mouth-synth</loc>
+    <loc>https://cynocyte.vercel.app/labs/mouth-synth</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cynocyte.com/labs/emotion-reactor</loc>
+    <loc>https://cynocyte.vercel.app/labs/emotion-reactor</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cynocyte.com/labs/eyebrow-dj</loc>
+    <loc>https://cynocyte.vercel.app/labs/eyebrow-dj</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cynocyte.com/labs/face-pong</loc>
+    <loc>https://cynocyte.vercel.app/labs/face-pong</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cynocyte.com/labs/finger-harp</loc>
+    <loc>https://cynocyte.vercel.app/labs/finger-harp</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cynocyte.com/labs/beatbox-visualizer</loc>
+    <loc>https://cynocyte.vercel.app/labs/beatbox-visualizer</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cynocyte.com/labs/time-warp-mirror</loc>
+    <loc>https://cynocyte.vercel.app/labs/time-warp-mirror</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cynocyte.com/labs/pixel-rain</loc>
+    <loc>https://cynocyte.vercel.app/labs/pixel-rain</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cynocyte.com/labs/holographic-twin</loc>
+    <loc>https://cynocyte.vercel.app/labs/holographic-twin</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cynocyte.com/labs/gravity-painter</loc>
+    <loc>https://cynocyte.vercel.app/labs/gravity-painter</loc>
     <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

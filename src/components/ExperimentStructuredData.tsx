@@ -21,7 +21,7 @@ export default function ExperimentStructuredData({
   number,
   experimentId,
 }: ExperimentStructuredDataProps) {
-  const experimentUrl = `https://cynocyte.com/labs/${experimentId}`
+  const experimentUrl = `https://cynocyte.vercel.app/labs/${experimentId}`
   
   const structuredData = {
     '@context': 'https://schema.org',
@@ -40,15 +40,15 @@ export default function ExperimentStructuredData({
     author: {
       '@type': 'Organization',
       name: 'Cynocyte',
-      url: 'https://cynocyte.com',
-      logo: 'https://cynocyte.com/logos/cynocyte%20long%20logo%20for%20dark%20theme.png',
+      url: 'https://cynocyte.vercel.app',
+      logo: 'https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png',
     },
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue: '4.5',
       ratingCount: '100',
     },
-    screenshot: 'https://cynocyte.com/logos/cynocyte%20long%20logo%20for%20dark%20theme.png',
+    screenshot: 'https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png',
     softwareRequirements: {
       '@type': 'SoftwareApplication',
       name: 'Modern Web Browser',

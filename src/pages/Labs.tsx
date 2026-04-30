@@ -60,8 +60,8 @@ export default function Labs() {
       <SEO
         title="Cynocyte Play Labs — 55 Interactive AI Experiments"
         description="Explore 55 interactive AI experiments: hand tracking, face detection, pose estimation, music synthesis, and more. Run entirely in your browser."
-        canonicalUrl="https://cynocyte.com/labs"
-        ogImage="https://cynocyte.com/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
+        canonicalUrl="https://cynocyte.vercel.app/labs"
+        ogImage="https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
         keywords="Cynocyte, Play Labs, AI experiments, hand tracking, face detection, pose estimation, music synthesis, computer vision, interactive AI"
       />
       <nav className="sticky top-0 z-50 glass border-b border-[var(--border-color)]">

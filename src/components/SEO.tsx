@@ -20,8 +20,8 @@ interface SEOProps {
 export default function SEO({
   title = 'Cynocyte — Intelligent Products & Experimental Platforms',
   description = 'Cynocyte builds intelligent products and experimental platforms. Explore Cynocyte Play Labs for 55 AI-powered browser experiments running on your device.',
-  canonicalUrl = 'https://cynocyte.com',
-  ogImage = 'https://cynocyte.com/logos/cynocyte%20long%20logo%20for%20dark%20theme.png',
+  canonicalUrl = 'https://cynocyte.vercel.app',
+  ogImage = 'https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png',
   ogType = 'website',
   keywords = 'Cynocyte, AI experiments, computer vision, hand tracking, face detection, pose estimation, interactive AI, Play Labs, browser experiments, web AI, MediaPipe',
   author = 'Cynocyte Systems',

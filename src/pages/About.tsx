@@ -12,8 +12,8 @@ export default function About() {
       <SEO
         title="About Cynocyte Play Labs — Interactive AI Experiments"
         description="Learn about Cynocyte Play Labs: 55 browser-based AI experiments using MediaPipe, Three.js, and Tone.js. 100% client-side, zero setup required."
-        canonicalUrl="https://cynocyte.com/about"
-        ogImage="https://cynocyte.com/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
+        canonicalUrl="https://cynocyte.vercel.app/about"
+        ogImage="https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
         keywords="Cynocyte, Play Labs, AI experiments, computer vision, hand tracking, browser-based AI, MediaPipe, educational AI"
       />
       <Navbar />
