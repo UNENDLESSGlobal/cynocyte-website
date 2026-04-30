@@ -19,7 +19,7 @@ export default function Footer() {
             />
             <span className="text-sm text-[var(--text-secondary)]">
               Built by{' '}
-              <span className="font-semibold text-[var(--text-primary)]">Cynocyte Systems</span>
+              <span className="font-semibold text-[var(--text-primary)]">Cynocyte</span>
               {' '}— A division of{' '}
               <span className="font-semibold text-[var(--text-primary)]">Unendless</span>
             </span>
@@ -72,21 +72,12 @@ export default function Footer() {
             >
               <Youtube className="w-4 h-4" />
             </a>
-            <a
-              href="https://github.com/cynocyte"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-8 h-8 rounded-full glass flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-              aria-label="GitHub"
-            >
-              <Github className="w-4 h-4" />
-            </a>
           </div>
         </div>
 
         <div className="mt-8 pt-8 border-t border-[var(--border-color)] text-center">
           <p className="text-xs text-[var(--text-secondary)]">
-            &copy; {new Date().getFullYear()} Cynocyte Systems. All rights reserved.
+            &copy; {new Date().getFullYear()} Cynocyte. All rights reserved.
           </p>
         </div>
       </div>
