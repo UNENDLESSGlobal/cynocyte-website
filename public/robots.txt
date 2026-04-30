@@ -4,7 +4,7 @@ Disallow: /node_modules/
 Disallow: /private/
 
 # Sitemaps
-Sitemap: https://cynocyte.com/sitemap.xml
+Sitemap: https://cynocyte.vercel.app/sitemap.xml
 
 # Crawl delay (in seconds)
 Crawl-delay: 1
