@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Github, Mail } from 'lucide-react'
+import { Github, Mail, Instagram, Twitter, Youtube } from 'lucide-react'
 
 export default function Footer() {
   return (
@@ -44,6 +44,33 @@ export default function Footer() {
               aria-label="Email"
             >
               <Mail className="w-4 h-4" />
+            </a>
+            <a
+              href="https://www.instagram.com/cynocyte/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-8 h-8 rounded-full glass flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              aria-label="Instagram"
+            >
+              <Instagram className="w-4 h-4" />
+            </a>
+            <a
+              href="https://twitter.com/cynocyte"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-8 h-8 rounded-full glass flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              aria-label="Twitter"
+            >
+              <Twitter className="w-4 h-4" />
+            </a>
+            <a
+              href="https://www.youtube.com/@Cynocyte"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-8 h-8 rounded-full glass flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              aria-label="YouTube"
+            >
+              <Youtube className="w-4 h-4" />
             </a>
             <a
               href="https://github.com/cynocyte"
