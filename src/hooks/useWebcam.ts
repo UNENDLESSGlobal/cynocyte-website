@@ -23,6 +23,8 @@ export function useWebcam({ width = 1280, height = 720, enabled = true }: UseWeb
       })
       setStream(s)
       if (videoRef.current) {
+        videoRef.current.muted = true
+        videoRef.current.playsInline = true
         videoRef.current.srcObject = s
         await videoRef.current.play()
       }

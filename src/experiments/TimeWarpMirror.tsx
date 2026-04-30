@@ -1,155 +1,213 @@
-import { useRef, useEffect, useState, useCallback } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Clock, Play, Square, SlidersHorizontal } from 'lucide-react'
 import { useWebcam } from '@/hooks/useWebcam'
-import { Play, Square, Clock, SlidersHorizontal } from 'lucide-react'
 
-interface Props { onClose: () => void }
+interface Props {
+  onClose: () => void
+}
+
+type MirrorMode = 'overlay' | 'vertical' | 'horizontal' | 'pip'
 
 export default function TimeWarpMirror({ onClose }: Props) {
-  const { videoRef, start, stop } = useWebcam()
+  const { videoRef, start, stop, error } = useWebcam()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [running, setRunning] = useState(false)
   const [delay, setDelay] = useState(3)
-  const [mode, setMode] = useState<'overlay' | 'split' | 'pip'>('overlay')
+  const [mode, setMode] = useState<MirrorMode>('overlay')
+  const [paradoxMode, setParadoxMode] = useState(false)
   const animRef = useRef<number>(0)
   const frameBuffer = useRef<string[]>([])
-  const maxBuffer = 60 // ~2 seconds at 30fps
+  const frozenFrameRef = useRef<string | null>(null)
+  const maxBuffer = 60
 
-  const captureFrame = useCallback((video: HTMLVideoElement, w: number, h: number): string => {
-    const c = document.createElement('canvas')
-    c.width = w; c.height = h
-    const ctx = c.getContext('2d')
-    if (!ctx) return ''
-    ctx.scale(-1, 1)
-    ctx.drawImage(video, -w, 0, w, h)
-    return c.toDataURL('image/jpeg', 0.5)
+  const captureFrame = useCallback((video: HTMLVideoElement, width: number, height: number): string => {
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    const context = canvas.getContext('2d')
+    if (!context) return ''
+    context.scale(-1, 1)
+    context.drawImage(video, -width, 0, width, height)
+    return canvas.toDataURL('image/jpeg', 0.5)
   }, [])
 
   useEffect(() => {
     if (!running) return
+
     const canvas = canvasRef.current
     const video = videoRef.current
     if (!canvas || !video) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
 
-    const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight }
+    const context = canvas.getContext('2d')
+    if (!context) return
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth
+      canvas.height = canvas.offsetHeight
+    }
+
+    let frameCount = 0
     resize()
     window.addEventListener('resize', resize)
 
-    let frameCount = 0
-
     const loop = () => {
-      const w = canvas.width
-      const h = canvas.height
+      const width = canvas.width
+      const height = canvas.height
 
       if (video.readyState >= 2) {
-        // Capture current frame
         if (frameCount % 2 === 0) {
-          const frameData = captureFrame(video, w, h)
+          const frameData = captureFrame(video, width, height)
           if (frameData) {
             frameBuffer.current.push(frameData)
             if (frameBuffer.current.length > maxBuffer) frameBuffer.current.shift()
+            if (paradoxMode && !frozenFrameRef.current) frozenFrameRef.current = frameData
           }
         }
 
-        // Get delayed frame
         const delayFrames = Math.min(Math.floor(delay * 10), frameBuffer.current.length - 1)
-        const delayedFrame = frameBuffer.current[frameBuffer.current.length - 1 - delayFrames]
+        const liveDelayedFrame = frameBuffer.current[frameBuffer.current.length - 1 - delayFrames]
+        const delayedFrame = paradoxMode ? frozenFrameRef.current ?? liveDelayedFrame : liveDelayedFrame
 
-        // Draw current
-        ctx.save()
-        ctx.scale(-1, 1)
-        ctx.drawImage(video, -w, 0, w, h)
-        ctx.restore()
+        context.save()
+        context.scale(-1, 1)
+        context.drawImage(video, -width, 0, width, height)
+        context.restore()
 
         if (delayedFrame && frameBuffer.current.length > 5) {
-          const img = new Image()
-          img.onload = () => {
-            ctx.save()
+          const image = new Image()
+          image.onload = () => {
+            context.save()
             if (mode === 'overlay') {
-              ctx.globalAlpha = 0.5
-              ctx.filter = 'hue-rotate(180deg) saturate(1.5) brightness(1.1)'
-              ctx.globalCompositeOperation = 'screen'
-              ctx.drawImage(img, 0, 0, w, h)
-            } else if (mode === 'split') {
-              ctx.globalAlpha = 0.7
-              ctx.filter = 'hue-rotate(180deg)'
-              ctx.drawImage(img, w / 2, 0, w / 2, h)
-              // Divider line
-              ctx.globalCompositeOperation = 'source-over'
-              ctx.strokeStyle = 'rgba(0, 255, 255, 0.5)'
-              ctx.lineWidth = 2
-              ctx.beginPath(); ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h); ctx.stroke()
+              context.globalAlpha = 0.6
+              context.filter = 'hue-rotate(180deg) saturate(1.5) brightness(1.1)'
+              context.globalCompositeOperation = 'screen'
+              context.drawImage(image, 0, 0, width, height)
+            } else if (mode === 'vertical') {
+              context.globalAlpha = 0.7
+              context.filter = 'hue-rotate(180deg)'
+              context.drawImage(image, width / 2, 0, width / 2, height)
+              context.globalCompositeOperation = 'source-over'
+              context.strokeStyle = 'rgba(0, 255, 255, 0.5)'
+              context.lineWidth = 2
+              context.beginPath()
+              context.moveTo(width / 2, 0)
+              context.lineTo(width / 2, height)
+              context.stroke()
+            } else if (mode === 'horizontal') {
+              context.globalAlpha = 0.7
+              context.filter = 'hue-rotate(180deg)'
+              context.drawImage(image, 0, height / 2, width, height / 2)
+              context.globalCompositeOperation = 'source-over'
+              context.strokeStyle = 'rgba(0, 255, 255, 0.5)'
+              context.lineWidth = 2
+              context.beginPath()
+              context.moveTo(0, height / 2)
+              context.lineTo(width, height / 2)
+              context.stroke()
             } else if (mode === 'pip') {
-              const pw = w * 0.25, ph = h * 0.25
-              ctx.globalAlpha = 0.7
-              ctx.filter = 'hue-rotate(180deg) grayscale(0.3)'
-              ctx.drawImage(img, w - pw - 20, 20, pw, ph)
-              ctx.strokeStyle = 'rgba(0, 255, 255, 0.5)'
-              ctx.lineWidth = 2
-              ctx.strokeRect(w - pw - 20, 20, pw, ph)
+              const pipWidth = width * 0.25
+              const pipHeight = height * 0.25
+              context.globalAlpha = 0.75
+              context.filter = 'hue-rotate(180deg) grayscale(0.3)'
+              context.drawImage(image, width - pipWidth - 20, 20, pipWidth, pipHeight)
+              context.strokeStyle = 'rgba(0, 255, 255, 0.5)'
+              context.lineWidth = 2
+              context.strokeRect(width - pipWidth - 20, 20, pipWidth, pipHeight)
             }
-            ctx.restore()
+            context.restore()
           }
-          img.src = delayedFrame
+          image.src = delayedFrame
         }
       } else {
-        ctx.fillStyle = '#060610'
-        ctx.fillRect(0, 0, w, h)
+        context.fillStyle = '#060610'
+        context.fillRect(0, 0, width, height)
       }
 
-      // Scanlines
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'
-      for (let y = 0; y < h; y += 3) {
-        ctx.fillRect(0, y, w, 1)
+      context.fillStyle = 'rgba(0, 0, 0, 0.05)'
+      for (let y = 0; y < height; y += 3) {
+        context.fillRect(0, y, width, 1)
       }
 
-      frameCount++
+      frameCount += 1
       animRef.current = requestAnimationFrame(loop)
     }
 
     animRef.current = requestAnimationFrame(loop)
-    return () => { cancelAnimationFrame(animRef.current); window.removeEventListener('resize', resize) }
-  }, [running, delay, mode, captureFrame, videoRef])
+    return () => {
+      cancelAnimationFrame(animRef.current)
+      window.removeEventListener('resize', resize)
+    }
+  }, [captureFrame, delay, mode, paradoxMode, running, videoRef])
 
-  const handleStart = async () => { frameBuffer.current = []; await start(); setRunning(true) }
-  const handleStop = () => { setRunning(false); stop(); frameBuffer.current = []; onClose() }
+  const handleStart = async () => {
+    frameBuffer.current = []
+    frozenFrameRef.current = null
+    await start()
+    setRunning(true)
+  }
+
+  const handleStop = () => {
+    setRunning(false)
+    stop()
+    frameBuffer.current = []
+    frozenFrameRef.current = null
+    onClose()
+  }
+
+  const toggleParadoxMode = () => {
+    setParadoxMode((value) => {
+      const next = !value
+      if (!next) frozenFrameRef.current = null
+      return next
+    })
+  }
 
   return (
-    <div className="relative w-full h-full flex flex-col" style={{ minHeight: '60vh' }}>
-      <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
+    <div className="relative flex h-full w-full flex-col" style={{ minHeight: '60vh' }}>
+      <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
         {!running ? (
-          <button onClick={handleStart} className="flex items-center gap-2 px-4 py-2 rounded-full accent-gradient text-white text-sm font-medium btn-hover"><Play className="w-4 h-4" /> Start</button>
+          <button onClick={handleStart} className="btn-hover flex items-center gap-2 rounded-full accent-gradient px-4 py-2 text-sm font-medium text-white">
+            <Play className="h-4 w-4" /> Start
+          </button>
         ) : (
-          <button onClick={handleStop} className="flex items-center gap-2 px-4 py-2 rounded-full glass text-white text-sm font-medium btn-hover"><Square className="w-4 h-4" /> Stop</button>
+          <button onClick={handleStop} className="btn-hover flex items-center gap-2 rounded-full glass px-4 py-2 text-sm font-medium text-white">
+            <Square className="h-4 w-4" /> Stop
+          </button>
         )}
       </div>
+
       {running && (
-        <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-          <div className="glass rounded-full px-3 py-1 flex items-center gap-1 text-white text-xs">
-            <Clock className="w-3.5 h-3.5" /> {delay}s delay
+        <>
+          <div className="absolute right-4 top-4 z-10 flex items-center gap-2 rounded-full glass px-3 py-1 text-xs text-white">
+            <Clock className="h-3.5 w-3.5" /> {delay}s delay
           </div>
-        </div>
-      )}
-      {running && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 glass rounded-full px-4 py-2 flex items-center gap-3">
-          <SlidersHorizontal className="w-4 h-4 text-[var(--text-secondary)]" />
-          <input type="range" min="0.5" max="5" step="0.5" value={delay} onChange={(e) => setDelay(parseFloat(e.target.value))} className="w-24 accent-[var(--accent-color)]" />
-          {(['overlay', 'split', 'pip'] as const).map(m => (
-            <button key={m} onClick={() => setMode(m)} className={`px-3 py-1 rounded-full text-xs ${mode === m ? 'accent-gradient text-white' : 'glass text-[var(--text-secondary)]'}`}>
-              {m}
+          <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3 rounded-full glass px-4 py-2">
+            <SlidersHorizontal className="h-4 w-4 text-[var(--text-secondary)]" />
+            <input type="range" min="0.5" max="5" step="0.5" value={delay} onChange={(event) => setDelay(parseFloat(event.target.value))} className="w-24 accent-[var(--accent-color)]" />
+            {(['overlay', 'vertical', 'horizontal', 'pip'] as const).map((value) => (
+              <button key={value} onClick={() => setMode(value)} className={`rounded-full px-3 py-1 text-xs ${mode === value ? 'accent-gradient text-white' : 'glass text-[var(--text-secondary)]'}`}>
+                {value}
+              </button>
+            ))}
+            <button onClick={toggleParadoxMode} className={`rounded-full px-3 py-1 text-xs ${paradoxMode ? 'accent-gradient text-white' : 'glass text-[var(--text-secondary)]'}`}>
+              Paradox
             </button>
-          ))}
-        </div>
+          </div>
+        </>
       )}
-      <video ref={videoRef} className="absolute inset-0 w-full h-full object-cover opacity-0" playsInline muted />
-      <canvas ref={canvasRef} className="w-full h-full" style={{ minHeight: '60vh' }} />
+
+      <video ref={videoRef} className="absolute inset-0 h-full w-full object-cover opacity-0" playsInline muted />
+      <canvas ref={canvasRef} className="h-full w-full" style={{ minHeight: '60vh' }} />
+
       {!running && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-20 rounded-2xl">
-          <div className="text-center p-8">
-            <p className="text-white text-lg font-semibold mb-2">Time Warp Mirror</p>
-            <p className="text-white/70 text-sm mb-4">See yourself with a delayed ghost echo. Adjust delay and mode.</p>
-            <button onClick={handleStart} className="px-6 py-3 rounded-full accent-gradient text-white font-semibold text-sm btn-hover">Start Camera</button>
+        <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/60">
+          <div className="p-8 text-center">
+            <p className="mb-2 text-lg font-semibold text-white">Time Warp Mirror</p>
+            <p className="mb-4 text-sm text-white/70">See a delayed ghost, switch between overlay, vertical, horizontal, or PIP views, and lock a paradox snapshot.</p>
+            {error && <p className="mb-4 text-sm text-rose-300">{error}</p>}
+            <button onClick={handleStart} className="btn-hover rounded-full accent-gradient px-6 py-3 text-sm font-semibold text-white">
+              Start Camera
+            </button>
           </div>
         </div>
       )}

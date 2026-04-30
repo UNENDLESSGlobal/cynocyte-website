@@ -1,42 +1,30 @@
-import { useRef, useEffect, useState, useCallback } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as Tone from 'tone'
 import { Play, Square, Volume2 } from 'lucide-react'
+import { useVision } from '@/hooks/useVision'
+import { mapRange, toCanvasPoint } from '@/lib/landmarks'
 
 interface Props {
   onClose: () => void
 }
 
 export default function ThereminAirSynth({ onClose }: Props) {
+  const { videoRef, startVision, stopVision, detectFrame, visionError, error } = useVision({ hand: true })
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [running, setRunning] = useState(false)
   const [note, setNote] = useState('--')
-  const mouseRef = useRef({ x: 0.5, y: 0.5, active: false })
   const synthRef = useRef<Tone.Synth | null>(null)
   const reverbRef = useRef<Tone.Reverb | null>(null)
   const chorusRef = useRef<Tone.Chorus | null>(null)
   const animRef = useRef<number>(0)
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const rect = canvas.getBoundingClientRect()
-    mouseRef.current.x = (e.clientX - rect.left) / rect.width
-    mouseRef.current.y = (e.clientY - rect.top) / rect.height
-    mouseRef.current.active = true
-  }, [])
-
-  const handleMouseLeave = useCallback(() => {
-    mouseRef.current.active = false
-    if (synthRef.current) {
-      synthRef.current.triggerRelease()
-    }
-    setNote('--')
-  }, [])
-
   useEffect(() => {
     if (!running) return
+
     const canvas = canvasRef.current
-    if (!canvas) return
+    const video = videoRef.current
+    if (!canvas || !video) return
+
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
@@ -44,10 +32,7 @@ export default function ThereminAirSynth({ onClose }: Props) {
       canvas.width = canvas.offsetWidth
       canvas.height = canvas.offsetHeight
     }
-    resize()
-    window.addEventListener('resize', resize)
 
-    // Init audio
     const reverb = new Tone.Reverb({ decay: 2.5, wet: 0.4 }).toDestination()
     const chorus = new Tone.Chorus({ frequency: 1.5, depth: 0.7, wet: 0.3 }).connect(reverb)
     const synth = new Tone.Synth({
@@ -58,73 +43,91 @@ export default function ThereminAirSynth({ onClose }: Props) {
     reverbRef.current = reverb
     chorusRef.current = chorus
 
+    resize()
+    window.addEventListener('resize', resize)
+
     const loop = () => {
       const w = canvas.width
       const h = canvas.height
-      const mx = mouseRef.current.x
-      const my = mouseRef.current.y
 
-      // Dark background with grid
-      ctx.fillStyle = '#060610'
-      ctx.fillRect(0, 0, w, h)
-
-      // Grid lines with frequency labels
-      ctx.strokeStyle = 'rgba(108, 99, 255, 0.1)'
-      ctx.lineWidth = 1
-      ctx.font = '10px JetBrains Mono, monospace'
-      ctx.fillStyle = 'rgba(108, 99, 255, 0.4)'
-
-      const freqs = [110, 220, 330, 440, 550, 660, 770, 880]
-      for (const f of freqs) {
-        const fy = h - ((Math.log2(f) - Math.log2(110)) / (Math.log2(880) - Math.log2(110))) * h
-        ctx.beginPath()
-        ctx.moveTo(0, fy)
-        ctx.lineTo(w, fy)
-        ctx.stroke()
-        ctx.fillText(`${f}Hz`, 8, fy - 4)
+      if (video.readyState >= 2) {
+        ctx.save()
+        ctx.scale(-1, 1)
+        ctx.drawImage(video, -w, 0, w, h)
+        ctx.restore()
+      } else {
+        ctx.fillStyle = '#060610'
+        ctx.fillRect(0, 0, w, h)
       }
 
-      if (mouseRef.current.active) {
-        const freq = 110 * Math.pow(2, (1 - my) * 3)
-        const vol = -40 + mx * 37
-        synth.triggerAttack(freq)
-        synth.volume.rampTo(vol, 0.05)
+      ctx.fillStyle = 'rgba(6, 6, 16, 0.72)'
+      ctx.fillRect(0, 0, w, h)
 
-        const noteName = Tone.Frequency(freq).toNote()
-        setNote(noteName)
+      ctx.strokeStyle = 'rgba(108, 99, 255, 0.15)'
+      ctx.lineWidth = 1
+      ctx.font = '10px JetBrains Mono, monospace'
+      ctx.fillStyle = 'rgba(108, 99, 255, 0.45)'
 
-        // Glowing dot
-        ctx.save()
-        ctx.fillStyle = `hsl(${240 + (1 - my) * 120}, 80%, 60%)`
-        ctx.shadowBlur = 30
-        ctx.shadowColor = `hsl(${240 + (1 - my) * 120}, 80%, 60%)`
+      const freqs = [110, 220, 330, 440, 550, 660, 770, 880]
+      for (const freq of freqs) {
+        const y = h - mapRange(Math.log2(freq), Math.log2(110), Math.log2(880), 0, h)
         ctx.beginPath()
-        ctx.arc(mx * w, my * h, 8, 0, Math.PI * 2)
+        ctx.moveTo(0, y)
+        ctx.lineTo(w, y)
+        ctx.stroke()
+        ctx.fillText(`${freq}Hz`, 8, y - 4)
+      }
+
+      const results = detectFrame(performance.now())
+      const hand = results?.hand?.landmarks?.[0]
+
+      if (hand) {
+        const wrist = toCanvasPoint(hand[0], w, h)
+        const normalizedX = wrist.x / w
+        const normalizedY = wrist.y / h
+        const freq = 110 * Math.pow(2, (1 - normalizedY) * 3)
+        const volume = -38 + normalizedX * 34
+
+        synth.triggerAttack(freq)
+        synth.volume.rampTo(volume, 0.05)
+        setNote(Tone.Frequency(freq).toNote())
+
+        const hue = 240 + (1 - normalizedY) * 120
+        ctx.save()
+        ctx.fillStyle = `hsl(${hue}, 80%, 60%)`
+        ctx.shadowBlur = 28
+        ctx.shadowColor = `hsl(${hue}, 80%, 60%)`
+        ctx.beginPath()
+        ctx.arc(wrist.x, wrist.y, 10, 0, Math.PI * 2)
         ctx.fill()
 
-        // Trail
-        ctx.globalAlpha = 0.3
+        ctx.globalAlpha = 0.35
         ctx.beginPath()
-        ctx.arc(mx * w, my * h, 20, 0, Math.PI * 2)
+        ctx.arc(wrist.x, wrist.y, 28, 0, Math.PI * 2)
         ctx.fill()
         ctx.restore()
 
-        // Waveform visualization
-        ctx.strokeStyle = `hsla(${240 + (1 - my) * 120}, 80%, 60%, 0.6)`
+        ctx.strokeStyle = `hsla(${hue}, 80%, 60%, 0.7)`
         ctx.lineWidth = 2
-        ctx.shadowBlur = 10
-        ctx.shadowColor = `hsl(${240 + (1 - my) * 120}, 80%, 60%)`
+        ctx.shadowBlur = 12
+        ctx.shadowColor = `hsl(${hue}, 80%, 60%)`
         ctx.beginPath()
-        for (let i = 0; i < w; i += 2) {
-          const amp = 20 * (1 - my)
-          const y = h / 2 + Math.sin(i * 0.02 + Date.now() * 0.005) * amp * Math.sin(Date.now() * 0.002)
-          if (i === 0) ctx.moveTo(i, y)
-          else ctx.lineTo(i, y)
+        for (let x = 0; x < w; x += 2) {
+          const amplitude = 18 + normalizedX * 40
+          const y = h / 2 + Math.sin(x * 0.018 + Date.now() * 0.004) * amplitude * Math.sin(Date.now() * 0.002)
+          if (x === 0) ctx.moveTo(x, y)
+          else ctx.lineTo(x, y)
         }
         ctx.stroke()
         ctx.shadowBlur = 0
       } else {
         synth.triggerRelease()
+        setNote('--')
+
+        ctx.fillStyle = 'rgba(255,255,255,0.65)'
+        ctx.font = '600 15px Space Grotesk, sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText('Show one hand to play the theremin', w / 2, h / 2)
       }
 
       animRef.current = requestAnimationFrame(loop)
@@ -138,51 +141,53 @@ export default function ThereminAirSynth({ onClose }: Props) {
       chorus.dispose()
       reverb.dispose()
     }
-  }, [running])
+  }, [detectFrame, running, videoRef])
 
   const handleStart = async () => {
     await Tone.start()
+    await startVision()
     setRunning(true)
   }
 
   const handleStop = () => {
     setRunning(false)
-    if (synthRef.current) synthRef.current.dispose()
-    if (reverbRef.current) reverbRef.current.dispose()
-    if (chorusRef.current) chorusRef.current.dispose()
+    stopVision()
+    synthRef.current?.dispose()
+    reverbRef.current?.dispose()
+    chorusRef.current?.dispose()
     onClose()
   }
 
+  const launchError = visionError ?? error
+
   return (
-    <div className="relative w-full h-full flex flex-col" style={{ minHeight: '60vh' }}>
-      <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
+    <div className="relative flex h-full w-full flex-col" style={{ minHeight: '60vh' }}>
+      <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
         {!running ? (
-          <button onClick={handleStart} className="flex items-center gap-2 px-4 py-2 rounded-full accent-gradient text-white text-sm font-medium btn-hover">
-            <Play className="w-4 h-4" /> Start
+          <button onClick={handleStart} className="btn-hover flex items-center gap-2 rounded-full accent-gradient px-4 py-2 text-sm font-medium text-white">
+            <Play className="h-4 w-4" /> Start
           </button>
         ) : (
-          <button onClick={handleStop} className="flex items-center gap-2 px-4 py-2 rounded-full glass text-white text-sm font-medium btn-hover">
-            <Square className="w-4 h-4" /> Stop
+          <button onClick={handleStop} className="btn-hover flex items-center gap-2 rounded-full glass px-4 py-2 text-sm font-medium text-white">
+            <Square className="h-4 w-4" /> Stop
           </button>
         )}
       </div>
-      <div className="absolute top-4 right-4 z-10 glass rounded-full px-4 py-2 flex items-center gap-2 text-white text-sm">
-        <Volume2 className="w-4 h-4" />
+      <div className="absolute right-4 top-4 z-10 flex items-center gap-2 rounded-full glass px-4 py-2 text-sm text-white">
+        <Volume2 className="h-4 w-4" />
         {note}
       </div>
-      <canvas
-        ref={canvasRef}
-        className="w-full h-full cursor-crosshair"
-        style={{ minHeight: '60vh' }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-      />
+
+      <video ref={videoRef} className="absolute inset-0 h-full w-full object-cover opacity-0" playsInline muted />
+      <canvas ref={canvasRef} className="h-full w-full" style={{ minHeight: '60vh' }} />
+
       {!running && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-20 rounded-2xl">
-          <div className="text-center p-8">
-            <p className="text-white text-lg font-semibold mb-2">Theremin Air Synth</p>
-            <p className="text-white/70 text-sm mb-4">Move mouse up/down for pitch, left/right for volume.</p>
-            <button onClick={handleStart} className="px-6 py-3 rounded-full accent-gradient text-white font-semibold text-sm btn-hover">
+        <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/80">
+          <div className="p-8 text-center">
+            <p className="mb-2 text-lg font-semibold text-white">Theremin Air Synth</p>
+            <p className="mb-4 text-sm text-white/70">Move one hand up and down for pitch. Move left and right for volume.</p>
+            {launchError && <p className="mb-4 text-sm text-rose-300">{launchError}</p>}
+            <button onClick={handleStart} className="btn-hover rounded-full accent-gradient px-6 py-3 text-sm font-semibold text-white">
               Start Synth
             </button>
           </div>
