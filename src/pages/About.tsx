@@ -3,11 +3,19 @@ import { Link } from 'react-router-dom'
 import { Hexagon, Sparkles, Cpu, Mail, ArrowRight, ExternalLink } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import SEO from '@/components/SEO'
 import ThemeToggle from '@/components/ThemeToggle'
 
 export default function About() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+      <SEO
+        title="About Cynocyte Play Labs — Interactive AI Experiments"
+        description="Learn about Cynocyte Play Labs: 55 browser-based AI experiments using MediaPipe, Three.js, and Tone.js. 100% client-side, zero setup required."
+        canonicalUrl="https://cynocyte.com/about"
+        ogImage="https://cynocyte.com/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
+        keywords="Cynocyte, Play Labs, AI experiments, computer vision, hand tracking, browser-based AI, MediaPipe, educational AI"
+      />
       <Navbar />
 
       <main className="pt-24 pb-16">

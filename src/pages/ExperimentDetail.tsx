@@ -7,23 +7,41 @@ import {
 import { experiments } from '@/experiments/registry'
 import { CATEGORY_COLORS, CATEGORY_BG } from '@/experiments/types'
 import type { Category } from '@/experiments/types'
+import SEO from '@/components/SEO'
+import BreadcrumbSchema from '@/components/BreadcrumbSchema'
+import ExperimentStructuredData from '@/components/ExperimentStructuredData'
 import ThemeToggle from '@/components/ThemeToggle'
-import { useState, useCallback } from 'react'
-import WebShooter from '@/experiments/WebShooter'
-import ThereminAirSynth from '@/experiments/ThereminAirSynth'
-import BubblePopper from '@/experiments/BubblePopper'
-import FingerLightsaber from '@/experiments/FingerLightsaber'
-import ColorStealer from '@/experiments/ColorStealer'
-import MouthSynth from '@/experiments/MouthSynth'
-import EmotionReactor from '@/experiments/EmotionReactor'
-import EyebrowDJ from '@/experiments/EyebrowDJ'
-import FacePong from '@/experiments/FacePong'
-import FingerHarp from '@/experiments/FingerHarp'
-import BeatboxVisualizer from '@/experiments/BeatboxVisualizer'
-import TimeWarpMirror from '@/experiments/TimeWarpMirror'
-import PixelRain from '@/experiments/PixelRain'
-import HolographicTwin from '@/experiments/HolographicTwin'
-import GravityPainter from '@/experiments/GravityPainter'
+import { useState, useCallback, Suspense, lazy } from 'react'
+import { Spinner } from '@/components/ui/spinner'
+
+// Lazy load all experiment components for better performance
+const WebShooter = lazy(() => import('@/experiments/WebShooter'))
+const ThereminAirSynth = lazy(() => import('@/experiments/ThereminAirSynth'))
+const BubblePopper = lazy(() => import('@/experiments/BubblePopper'))
+const FingerLightsaber = lazy(() => import('@/experiments/FingerLightsaber'))
+const ColorStealer = lazy(() => import('@/experiments/ColorStealer'))
+const MouthSynth = lazy(() => import('@/experiments/MouthSynth'))
+const EmotionReactor = lazy(() => import('@/experiments/EmotionReactor'))
+const EyebrowDJ = lazy(() => import('@/experiments/EyebrowDJ'))
+const FacePong = lazy(() => import('@/experiments/FacePong'))
+const FingerHarp = lazy(() => import('@/experiments/FingerHarp'))
+const BeatboxVisualizer = lazy(() => import('@/experiments/BeatboxVisualizer'))
+const TimeWarpMirror = lazy(() => import('@/experiments/TimeWarpMirror'))
+const PixelRain = lazy(() => import('@/experiments/PixelRain'))
+const HolographicTwin = lazy(() => import('@/experiments/HolographicTwin'))
+const GravityPainter = lazy(() => import('@/experiments/GravityPainter'))
+
+// Fallback loading component
+function ExperimentLoadingFallback() {
+  return (
+    <div className="min-h-[600px] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <Spinner className="size-8" />
+        <p className="text-sm text-[var(--text-secondary)]">Loading experiment...</p>
+      </div>
+    </div>
+  )
+}
 
 const experimentComponents: Record<string, React.ComponentType<{ onClose: () => void }>> = {
   'web-shooter': WebShooter,
@@ -83,6 +101,28 @@ export default function ExperimentDetail() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+      <SEO
+        title={`${experiment.title} — Cynocyte Play Labs AI Experiment`}
+        description={`${experiment.description} Interactive ${experiment.category} experiment from Cynocyte Play Labs.`}
+        canonicalUrl={`https://cynocyte.com/labs/${experiment.id}`}
+        ogImage="https://cynocyte.com/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
+        keywords={`${experiment.title}, ${experiment.category}, Cynocyte, AI experiments, Play Labs, ${experiment.tagline}`}
+      />
+      <BreadcrumbSchema
+        items={[
+          { name: 'Home', url: 'https://cynocyte.com' },
+          { name: 'Play Labs', url: 'https://cynocyte.com/labs' },
+          { name: experiment.title, url: `https://cynocyte.com/labs/${experiment.id}` },
+        ]}
+      />
+      <ExperimentStructuredData
+        title={experiment.title}
+        description={experiment.description}
+        category={experiment.category}
+        difficulty={experiment.difficulty}
+        number={experiment.number}
+        experimentId={experiment.id}
+      />
       <nav className="sticky top-0 z-50 glass border-b border-[var(--border-color)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
@@ -348,7 +388,9 @@ export default function ExperimentDetail() {
                 </button>
               </div>
               <div className="rounded-2xl overflow-hidden border border-[var(--border-color)]" style={{ minHeight: '60vh' }}>
-                <ExperimentComponent onClose={handleStop} />
+                <Suspense fallback={<ExperimentLoadingFallback />}>
+                  <ExperimentComponent onClose={handleStop} />
+                </Suspense>
               </div>
             </motion.div>
           )}

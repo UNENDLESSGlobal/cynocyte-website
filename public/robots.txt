@@ -1,9 +1,21 @@
 User-agent: *
 Allow: /
 Disallow: /node_modules/
+Disallow: /private/
 
 # Sitemaps
 Sitemap: https://cynocyte.com/sitemap.xml
 
-# Crawl delay (optional - in seconds)
+# Crawl delay (in seconds)
 Crawl-delay: 1
+
+# Specific rules for Googlebot
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Specific rules for Bingbot
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+

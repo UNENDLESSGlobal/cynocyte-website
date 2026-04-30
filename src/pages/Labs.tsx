@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import ThemeToggle from '@/components/ThemeToggle'
 import Footer from '@/components/Footer'
+import SEO from '@/components/SEO'
 import { experiments, categories } from '@/experiments/registry'
 import { CATEGORY_COLORS, CATEGORY_BG } from '@/experiments/types'
 import type { Category } from '@/experiments/types'
@@ -56,6 +57,13 @@ export default function Labs() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+      <SEO
+        title="Cynocyte Play Labs — 55 Interactive AI Experiments"
+        description="Explore 55 interactive AI experiments: hand tracking, face detection, pose estimation, music synthesis, and more. Run entirely in your browser."
+        canonicalUrl="https://cynocyte.com/labs"
+        ogImage="https://cynocyte.com/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
+        keywords="Cynocyte, Play Labs, AI experiments, hand tracking, face detection, pose estimation, music synthesis, computer vision, interactive AI"
+      />
       <nav className="sticky top-0 z-50 glass border-b border-[var(--border-color)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 gap-4">
