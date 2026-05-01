@@ -1,28 +1,35 @@
 import { useEffect, useRef, useState } from 'react'
-import * as Tone from 'tone'
-import { Music, Play, Square } from 'lucide-react'
+import { Play, Square, Music } from 'lucide-react'
 import { useVision } from '@/hooks/useVision'
-import { getFingerTips } from '@/lib/landmarks'
+import * as Tone from 'tone'
 
 interface Props {
   onClose: () => void
 }
 
-const notes = ['C3', 'D3', 'E3', 'F3', 'G3', 'A3', 'B3', 'C4', 'D4', 'E4']
-const noteColors = ['#6C63FF', '#7C5DFF', '#8D57FF', '#9E50FF', '#AF4AFF', '#C044FF', '#D13DFF', '#E237FF', '#F330FF', '#FF2AE8']
-const variants = ['harp', 'guitar', 'guqin'] as const
-type Variant = (typeof variants)[number]
+const NOTES = ['C4', 'D4', 'E4', 'G4', 'A4', 'C5', 'D5', 'E5', 'G5', 'A5']
 
 export default function FingerHarp({ onClose }: Props) {
   const { videoRef, startVision, stopVision, detectFrame, visionError, error } = useVision({ hand: true })
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [running, setRunning] = useState(false)
-  const [lastNote, setLastNote] = useState('--')
-  const [variant, setVariant] = useState<Variant>('harp')
+  const [instrument, setInstrument] = useState<'harp' | 'guitar'>('harp')
   const animRef = useRef<number>(0)
-  const synthRef = useRef<Tone.PolySynth | null>(null)
-  const stringsRef = useRef<Array<{ vibrating: number; amplitude: number }>>(notes.map(() => ({ vibrating: 0, amplitude: 0 })))
-  const tipHistoryRef = useRef<Record<string, number>>({})
+
+  // Audio setup
+  const synthRef = useRef<Tone.PluckSynth | Tone.PolySynth | null>(null)
+  
+  // Physics/Visuals state
+  const stringsRef = useRef(NOTES.map((note, i) => ({
+    note,
+    x: 0, // Set dynamically
+    vibration: 0, // Amplitude of sine wave
+    pluckY: 0,
+    active: false
+  })))
+
+  const lastTipsRef = useRef<Record<number, { x: number, y: number }>>({})
+  const ripplesRef = useRef<{x: number, y: number, radius: number, life: number}[]>([])
 
   useEffect(() => {
     if (!running) return
@@ -34,125 +41,144 @@ export default function FingerHarp({ onClose }: Props) {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const presets: Record<Variant, Tone.ToneOscillatorType> = {
-      harp: 'triangle',
-      guitar: 'sawtooth',
-      guqin: 'sine',
-    }
-
-    const synth = new Tone.PolySynth(Tone.Synth, {
-      oscillator: { type: presets[variant] },
-      envelope: {
-        attack: 0.005,
-        decay: variant === 'guitar' ? 0.2 : 0.35,
-        sustain: variant === 'guqin' ? 0.22 : 0.1,
-        release: variant === 'guqin' ? 2.2 : variant === 'guitar' ? 1 : 1.5,
-      },
-    }).toDestination()
-    const reverb = new Tone.Reverb({ decay: variant === 'guqin' ? 5 : 3.5, wet: variant === 'guitar' ? 0.25 : 0.5 }).toDestination()
-    synth.connect(reverb)
-    synthRef.current = synth
-
     const resize = () => {
       canvas.width = canvas.offsetWidth
       canvas.height = canvas.offsetHeight
+      // Recalculate string positions
+      const spacing = canvas.width / (NOTES.length + 1)
+      stringsRef.current.forEach((s, i) => {
+        s.x = spacing * (i + 1)
+      })
     }
-
     resize()
     window.addEventListener('resize', resize)
 
+    // Synthesizer Configuration
+    if (synthRef.current) synthRef.current.dispose()
+
+    if (instrument === 'harp') {
+      synthRef.current = new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: 'sine' },
+        envelope: { attack: 0.01, decay: 1, sustain: 0.1, release: 2 }
+      }).toDestination()
+      synthRef.current.volume.value = -5
+    } else {
+      synthRef.current = new Tone.PluckSynth({
+        attackNoise: 1,
+        dampening: 4000,
+        resonance: 0.9
+      }).toDestination()
+      synthRef.current.volume.value = 5
+    }
+
     const loop = () => {
-      const width = canvas.width
-      const height = canvas.height
+      const w = canvas.width
+      const h = canvas.height
+
+      // Background with motion blur trail
+      ctx.fillStyle = 'rgba(6, 6, 16, 0.4)'
+      ctx.fillRect(0, 0, w, h)
 
       if (video.readyState >= 2) {
         ctx.save()
+        ctx.globalAlpha = 0.1
         ctx.scale(-1, 1)
-        ctx.drawImage(video, -width, 0, width, height)
+        ctx.drawImage(video, -w, 0, w, h)
         ctx.restore()
-      } else {
-        ctx.fillStyle = '#060610'
-        ctx.fillRect(0, 0, width, height)
       }
 
-      ctx.fillStyle = 'rgba(6, 6, 16, 0.65)'
-      ctx.fillRect(0, 0, width, height)
-
-      const stringPositions = notes.map((_, index) => (width / (notes.length + 1)) * (index + 1))
-      const hands = detectFrame(performance.now())?.hand?.landmarks ?? []
-
-      hands.forEach((landmarks, handIndex) => {
-        const tips = getFingerTips(landmarks, width, height)
-        tips.forEach((tip, tipIndex) => {
-          const key = `${handIndex}-${tipIndex}`
-          const previousX = tipHistoryRef.current[key]
-
-          for (let stringIndex = 0; stringIndex < stringPositions.length; stringIndex += 1) {
-            const stringX = stringPositions[stringIndex]
-            const crossed =
-              typeof previousX === 'number' &&
-              ((previousX < stringX && tip.x >= stringX) || (previousX >= stringX && tip.x < stringX))
-
-            if (crossed) {
-              synth.triggerAttackRelease(notes[stringIndex], '8n')
-              stringsRef.current[stringIndex].vibrating = 1
-              stringsRef.current[stringIndex].amplitude = 10
-              setLastNote(notes[stringIndex])
-            }
-          }
-
-          tipHistoryRef.current[key] = tip.x
-
-          ctx.save()
-          ctx.fillStyle = '#9efcff'
-          ctx.shadowBlur = 18
-          ctx.shadowColor = '#9efcff'
-          ctx.beginPath()
-          ctx.arc(tip.x, tip.y, 5, 0, Math.PI * 2)
-          ctx.fill()
-          ctx.restore()
-        })
+      // Draw Ripples
+      ripplesRef.current = ripplesRef.current.filter(r => r.life > 0)
+      ripplesRef.current.forEach(r => {
+        ctx.beginPath()
+        ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2)
+        ctx.strokeStyle = `rgba(0, 255, 255, ${r.life})`
+        ctx.lineWidth = 2
+        ctx.stroke()
+        r.radius += 5
+        r.life -= 0.05
       })
 
-      for (let index = 0; index < notes.length; index += 1) {
-        const stringX = stringPositions[index]
-        const state = stringsRef.current[index]
-
-        if (state.vibrating > 0) {
-          state.vibrating *= 0.98
-          state.amplitude *= 0.97
-          if (state.vibrating < 0.01) state.vibrating = 0
-        }
-
-        ctx.save()
-        ctx.strokeStyle = noteColors[index]
-        ctx.lineWidth = state.vibrating > 0 ? 3 : 1
-        ctx.globalAlpha = state.vibrating > 0 ? 1 : 0.4
-        ctx.shadowBlur = state.vibrating > 0 ? 15 : 0
-        ctx.shadowColor = noteColors[index]
-
+      // Draw Strings
+      stringsRef.current.forEach(s => {
         ctx.beginPath()
-        for (let y = 0; y < height; y += 2) {
-          const offset = state.vibrating > 0 ? Math.sin(y * 0.1 + Date.now() * 0.02) * state.amplitude * state.vibrating : 0
-          if (y === 0) ctx.moveTo(stringX + offset, y)
-          else ctx.lineTo(stringX + offset, y)
-        }
-        ctx.stroke()
+        ctx.strokeStyle = s.active ? '#00ffff' : 'rgba(0, 255, 255, 0.2)'
+        ctx.lineWidth = s.active ? 4 : 2
+        ctx.shadowBlur = s.active ? 15 : 0
+        ctx.shadowColor = '#00ffff'
 
-        if (state.vibrating > 0.5) {
-          ctx.globalAlpha = state.vibrating * 0.3
-          ctx.beginPath()
-          ctx.arc(stringX, height / 2, (1 - state.vibrating) * 60, 0, Math.PI * 2)
+        if (s.vibration > 0.1) {
+          // Draw sine wave
+          ctx.moveTo(s.x, 0)
+          for (let y = 0; y < h; y += 10) {
+            // Envelope so ends don't move
+            const env = Math.sin((y / h) * Math.PI)
+            // The wave
+            const wave = Math.sin(y * 0.05 + performance.now() * 0.05) * s.vibration * env
+            ctx.lineTo(s.x + wave, y)
+          }
+          ctx.stroke()
+          s.vibration *= 0.92 // dampen
+          if (s.vibration < 0.1) s.active = false
+        } else {
+          // Straight line
+          ctx.moveTo(s.x, 0)
+          ctx.lineTo(s.x, h)
           ctx.stroke()
         }
+      })
+      ctx.shadowBlur = 0 // Reset
 
-        ctx.restore()
+      const results = detectFrame(performance.now())
+      const hands = results?.hand?.landmarks ?? []
 
-        ctx.fillStyle = 'rgba(255,255,255,0.36)'
-        ctx.font = '10px JetBrains Mono, monospace'
-        ctx.textAlign = 'center'
-        ctx.fillText(notes[index], stringX, height - 10)
-      }
+      hands.forEach((landmarks, handIdx) => {
+        // Track all 5 fingertips: 4=Thumb, 8=Index, 12=Middle, 16=Ring, 20=Pinky
+        [4, 8, 12, 16, 20].forEach((tipIdx) => {
+          const tip = landmarks[tipIdx]
+          // Mirror mapping
+          const px = (1 - tip.x) * w
+          const py = tip.y * h
+
+          // Draw tracking dot
+          ctx.beginPath()
+          ctx.arc(px, py, 5, 0, Math.PI * 2)
+          ctx.fillStyle = '#ff00ff'
+          ctx.fill()
+
+          const id = handIdx * 100 + tipIdx
+          const lastTip = lastTipsRef.current[id]
+
+          if (lastTip) {
+            // Check collision with any string
+            stringsRef.current.forEach(s => {
+              // Did we cross the string line?
+              if ((lastTip.x <= s.x && px >= s.x) || (lastTip.x >= s.x && px <= s.x)) {
+                // Ignore if it's too fast or a jitter (distance > w/2)
+                if (Math.abs(lastTip.x - px) < w/4) {
+                  // Pluck!
+                  s.active = true
+                  s.vibration = Math.min(50, Math.abs(lastTip.x - px) * 2) // Velocity affects amplitude
+                  s.pluckY = py
+                  
+                  // Trigger sound
+                  if (synthRef.current) {
+                    if (synthRef.current instanceof Tone.PolySynth) {
+                      synthRef.current.triggerAttackRelease(s.note, "8n")
+                    } else {
+                      synthRef.current.triggerAttack(s.note)
+                    }
+                  }
+
+                  // Spawn ripple
+                  ripplesRef.current.push({ x: s.x, y: py, radius: 10, life: 1 })
+                }
+              }
+            })
+          }
+          lastTipsRef.current[id] = { x: px, y: py }
+        })
+      })
 
       animRef.current = requestAnimationFrame(loop)
     }
@@ -161,10 +187,9 @@ export default function FingerHarp({ onClose }: Props) {
     return () => {
       cancelAnimationFrame(animRef.current)
       window.removeEventListener('resize', resize)
-      synth.dispose()
-      reverb.dispose()
+      if (synthRef.current) synthRef.current.dispose()
     }
-  }, [detectFrame, running, variant, videoRef])
+  }, [detectFrame, running, instrument])
 
   const handleStart = async () => {
     await Tone.start()
@@ -178,15 +203,11 @@ export default function FingerHarp({ onClose }: Props) {
     onClose()
   }
 
-  const cycleVariant = () => {
-    setVariant((value) => variants[(variants.indexOf(value) + 1) % variants.length])
-  }
-
   const launchError = visionError ?? error
 
   return (
-    <div className="relative flex h-full w-full flex-col" style={{ minHeight: '60vh' }}>
-      <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
+    <div className="relative flex h-full w-full flex-col overflow-hidden bg-[#060610]" style={{ minHeight: '60vh' }}>
+      <div className="absolute left-4 top-4 z-20 flex items-center gap-2">
         {!running ? (
           <button onClick={handleStart} className="btn-hover flex items-center gap-2 rounded-full accent-gradient px-4 py-2 text-sm font-medium text-white">
             <Play className="h-4 w-4" /> Start
@@ -196,27 +217,41 @@ export default function FingerHarp({ onClose }: Props) {
             <button onClick={handleStop} className="btn-hover flex items-center gap-2 rounded-full glass px-4 py-2 text-sm font-medium text-white">
               <Square className="h-4 w-4" /> Stop
             </button>
-            <button onClick={cycleVariant} className="btn-hover rounded-full glass px-4 py-2 text-sm font-medium text-white">
-              {variant}
-            </button>
+            <div className="flex bg-black/40 rounded-full p-1 ml-4">
+              {(['harp', 'guitar'] as const).map(inst => (
+                <button
+                  key={inst}
+                  onClick={() => setInstrument(inst)}
+                  className={`px-4 py-1.5 rounded-full text-xs font-medium capitalize transition-colors ${
+                    instrument === inst ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  {inst}
+                </button>
+              ))}
+            </div>
           </>
         )}
       </div>
-      <div className="absolute right-4 top-4 z-10 flex items-center gap-2 rounded-full glass px-4 py-2 text-sm text-white">
-        <Music className="h-4 w-4" /> {lastNote}
-      </div>
 
-      <video ref={videoRef} className="absolute inset-0 h-full w-full object-cover opacity-0" playsInline muted />
-      <canvas ref={canvasRef} className="h-full w-full" style={{ minHeight: '60vh' }} />
+      {running && (
+        <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full glass px-4 py-2 pointer-events-none">
+          <Music className="w-4 h-4 text-white/50 mr-2" />
+          <span className="text-xs font-medium text-white/80">Sweep your fingers across the glowing strings to play.</span>
+        </div>
+      )}
+
+      <video ref={videoRef} className="absolute inset-0 h-10 w-10 opacity-0 pointer-events-none" playsInline muted />
+      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full z-10" />
 
       {!running && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/60">
-          <div className="p-8 text-center">
+        <div className="absolute inset-0 z-30 flex items-center justify-center rounded-2xl bg-black/60 backdrop-blur-sm">
+          <div className="p-8 text-center max-w-sm">
             <p className="mb-2 text-lg font-semibold text-white">Finger Harp</p>
-            <p className="mb-4 text-sm text-white/70">Sweep your fingertips through the strings to pluck notes. Use the button to swap sound variants.</p>
+            <p className="mb-4 text-sm text-white/70">Sweep your fingertips across glowing laser strings to play beautiful music in thin air.</p>
             {launchError && <p className="mb-4 text-sm text-rose-300">{launchError}</p>}
             <button onClick={handleStart} className="btn-hover rounded-full accent-gradient px-6 py-3 text-sm font-semibold text-white">
-              Start
+              Start Playing
             </button>
           </div>
         </div>

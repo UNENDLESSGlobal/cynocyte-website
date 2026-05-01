@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { ArrowRight, Sparkles } from 'lucide-react'
+import { ArrowRight, Sparkles, Code2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export default function Hero() {
@@ -59,6 +59,13 @@ export default function Hero() {
           >
             Explore Play Labs
             <ArrowRight className="w-4 h-4" />
+          </Link>
+          <Link
+            to="/systems"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-full glass text-[var(--text-primary)] font-semibold text-sm btn-hover"
+          >
+            Cynocyte Systems
+            <Code2 className="w-4 h-4" />
           </Link>
           <button
             onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}

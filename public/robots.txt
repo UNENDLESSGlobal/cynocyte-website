@@ -3,6 +3,7 @@ Allow: /
 # Priority crawl paths
 Allow: /labs
 Allow: /about
+Allow: /systems
 Allow: /labs/
 # Sitemap location
 Sitemap: https://cynocyte.vercel.app/sitemap.xml

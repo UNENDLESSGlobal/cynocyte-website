@@ -1,35 +1,28 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { Clock, Play, Square, SlidersHorizontal } from 'lucide-react'
-import { useWebcam } from '@/hooks/useWebcam'
+import { useEffect, useRef, useState } from 'react'
+import { Play, Square, Layers, Snowflake } from 'lucide-react'
+import { useVision } from '@/hooks/useVision'
 
 interface Props {
   onClose: () => void
 }
 
-type MirrorMode = 'overlay' | 'vertical' | 'horizontal' | 'pip'
-
 export default function TimeWarpMirror({ onClose }: Props) {
-  const { videoRef, start, stop, error } = useWebcam()
+  const { videoRef, startVision, stopVision, visionError, error } = useVision({ cameraOnly: true })
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [running, setRunning] = useState(false)
-  const [delay, setDelay] = useState(3)
-  const [mode, setMode] = useState<MirrorMode>('overlay')
-  const [paradoxMode, setParadoxMode] = useState(false)
+  const [layers, setLayers] = useState<1 | 2 | 3>(1)
+  const [frozen, setFrozen] = useState(false)
   const animRef = useRef<number>(0)
-  const frameBuffer = useRef<string[]>([])
-  const frozenFrameRef = useRef<string | null>(null)
-  const maxBuffer = 60
 
-  const captureFrame = useCallback((video: HTMLVideoElement, width: number, height: number): string => {
-    const canvas = document.createElement('canvas')
-    canvas.width = width
-    canvas.height = height
-    const context = canvas.getContext('2d')
-    if (!context) return ''
-    context.scale(-1, 1)
-    context.drawImage(video, -width, 0, width, height)
-    return canvas.toDataURL('image/jpeg', 0.5)
-  }, [])
+  // Use a smaller resolution for the frame buffer to prevent memory exhaustion
+  const BUF_W = 320
+  const BUF_H = 240
+  // 9 seconds at ~30fps = 270 frames
+  const BUF_SIZE = 270
+  
+  const bufferRef = useRef<(ImageData | null)[]>(new Array(BUF_SIZE).fill(null))
+  const headRef = useRef(0)
+  const frozenFrameRef = useRef<ImageData | null>(null)
 
   useEffect(() => {
     if (!running) return
@@ -38,97 +31,131 @@ export default function TimeWarpMirror({ onClose }: Props) {
     const video = videoRef.current
     if (!canvas || !video) return
 
-    const context = canvas.getContext('2d')
-    if (!context) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    // Offscreen canvas for downscaling and reading pixels
+    const txCanvas = document.createElement('canvas')
+    txCanvas.width = BUF_W
+    txCanvas.height = BUF_H
+    const txCtx = txCanvas.getContext('2d', { willReadFrequently: true })
+    if (!txCtx) return
+
+    // Offscreen canvas for drawing ghost frames
+    const ghostCanvas = document.createElement('canvas')
+    ghostCanvas.width = BUF_W
+    ghostCanvas.height = BUF_H
+    const ghostCtx = ghostCanvas.getContext('2d')
 
     const resize = () => {
       canvas.width = canvas.offsetWidth
       canvas.height = canvas.offsetHeight
     }
-
-    let frameCount = 0
     resize()
     window.addEventListener('resize', resize)
 
+    // Throttle frame capture to ~30fps even if requestAnimationFrame runs at 60fps
+    let lastCapture = 0
+
     const loop = () => {
-      const width = canvas.width
-      const height = canvas.height
+      const w = canvas.width
+      const h = canvas.height
+      const now = performance.now()
+
+      ctx.fillStyle = '#060610'
+      ctx.fillRect(0, 0, w, h)
 
       if (video.readyState >= 2) {
-        if (frameCount % 2 === 0) {
-          const frameData = captureFrame(video, width, height)
-          if (frameData) {
-            frameBuffer.current.push(frameData)
-            if (frameBuffer.current.length > maxBuffer) frameBuffer.current.shift()
-            if (paradoxMode && !frozenFrameRef.current) frozenFrameRef.current = frameData
+        // Draw live feed
+        ctx.save()
+        ctx.scale(-1, 1)
+        ctx.drawImage(video, -w, 0, w, h)
+        ctx.restore()
+
+        // Capture frame to buffer every ~33ms (30fps)
+        if (now - lastCapture > 33) {
+          txCtx.save()
+          txCtx.scale(-1, 1)
+          txCtx.drawImage(video, -BUF_W, 0, BUF_W, BUF_H)
+          txCtx.restore()
+          
+          const frameData = txCtx.getImageData(0, 0, BUF_W, BUF_H)
+          
+          if (!frozen) {
+            headRef.current = (headRef.current + 1) % BUF_SIZE
+            bufferRef.current[headRef.current] = frameData
+          } else if (!frozenFrameRef.current) {
+            // Freeze the current oldest requested layer
+            const oldestDelay = layers * 90 // 1=3s, 2=6s, 3=9s
+            let idx = (headRef.current - oldestDelay + BUF_SIZE) % BUF_SIZE
+            if (idx < 0) idx += BUF_SIZE
+            frozenFrameRef.current = bufferRef.current[idx] || frameData
           }
+          
+          lastCapture = now
         }
 
-        const delayFrames = Math.min(Math.floor(delay * 10), frameBuffer.current.length - 1)
-        const liveDelayedFrame = frameBuffer.current[frameBuffer.current.length - 1 - delayFrames]
-        const delayedFrame = paradoxMode ? frozenFrameRef.current ?? liveDelayedFrame : liveDelayedFrame
+        // Draw Ghost Layers
+        ctx.globalCompositeOperation = 'screen'
+        
+        for (let l = 1; l <= layers; l++) {
+          const delayFrames = l * 90 // 3 seconds per layer at 30fps
+          
+          let ghostData: ImageData | null = null
+          
+          if (frozen && l === layers && frozenFrameRef.current) {
+             ghostData = frozenFrameRef.current
+          } else {
+             let targetIdx = (headRef.current - delayFrames + BUF_SIZE) % BUF_SIZE
+             if (targetIdx < 0) targetIdx += BUF_SIZE
+             ghostData = bufferRef.current[targetIdx]
+          }
 
-        context.save()
-        context.scale(-1, 1)
-        context.drawImage(video, -width, 0, width, height)
-        context.restore()
-
-        if (delayedFrame && frameBuffer.current.length > 5) {
-          const image = new Image()
-          image.onload = () => {
-            context.save()
-            if (mode === 'overlay') {
-              context.globalAlpha = 0.6
-              context.filter = 'hue-rotate(180deg) saturate(1.5) brightness(1.1)'
-              context.globalCompositeOperation = 'screen'
-              context.drawImage(image, 0, 0, width, height)
-            } else if (mode === 'vertical') {
-              context.globalAlpha = 0.7
-              context.filter = 'hue-rotate(180deg)'
-              context.drawImage(image, width / 2, 0, width / 2, height)
-              context.globalCompositeOperation = 'source-over'
-              context.strokeStyle = 'rgba(0, 255, 255, 0.5)'
-              context.lineWidth = 2
-              context.beginPath()
-              context.moveTo(width / 2, 0)
-              context.lineTo(width / 2, height)
-              context.stroke()
-            } else if (mode === 'horizontal') {
-              context.globalAlpha = 0.7
-              context.filter = 'hue-rotate(180deg)'
-              context.drawImage(image, 0, height / 2, width, height / 2)
-              context.globalCompositeOperation = 'source-over'
-              context.strokeStyle = 'rgba(0, 255, 255, 0.5)'
-              context.lineWidth = 2
-              context.beginPath()
-              context.moveTo(0, height / 2)
-              context.lineTo(width, height / 2)
-              context.stroke()
-            } else if (mode === 'pip') {
-              const pipWidth = width * 0.25
-              const pipHeight = height * 0.25
-              context.globalAlpha = 0.75
-              context.filter = 'hue-rotate(180deg) grayscale(0.3)'
-              context.drawImage(image, width - pipWidth - 20, 20, pipWidth, pipHeight)
-              context.strokeStyle = 'rgba(0, 255, 255, 0.5)'
-              context.lineWidth = 2
-              context.strokeRect(width - pipWidth - 20, 20, pipWidth, pipHeight)
+          if (ghostData && ghostCtx) {
+            // Apply a tint based on the layer depth
+            // We manipulate pixels manually for tinting
+            const tinted = new ImageData(new Uint8ClampedArray(ghostData.data), BUF_W, BUF_H)
+            const d = tinted.data
+            
+            for(let i=0; i<d.length; i+=4) {
+              const r = d[i]
+              const g = d[i+1]
+              const b = d[i+2]
+              const gray = r * 0.3 + g * 0.59 + b * 0.11
+              
+              if (l === 1) { // Cyan
+                d[i] = gray * 0.2
+                d[i+1] = gray
+                d[i+2] = gray
+              } else if (l === 2) { // Magenta
+                d[i] = gray
+                d[i+1] = gray * 0.2
+                d[i+2] = gray
+              } else { // Yellow
+                d[i] = gray
+                d[i+1] = gray
+                d[i+2] = gray * 0.2
+              }
+              // Add scanline gap
+              if (Math.floor((i/4)/BUF_W) % 4 === 0) {
+                 d[i+3] = 0 // transparent scanline
+              } else {
+                 d[i+3] = 150 // Semi-transparent overall
+              }
             }
-            context.restore()
+            
+            ghostCtx.putImageData(tinted, 0, 0)
+            
+            ctx.save()
+            ctx.globalAlpha = 0.8
+            ctx.drawImage(ghostCanvas, 0, 0, w, h)
+            ctx.restore()
           }
-          image.src = delayedFrame
         }
-      } else {
-        context.fillStyle = '#060610'
-        context.fillRect(0, 0, width, height)
+        
+        ctx.globalCompositeOperation = 'source-over'
       }
 
-      context.fillStyle = 'rgba(0, 0, 0, 0.05)'
-      for (let y = 0; y < height; y += 3) {
-        context.fillRect(0, y, width, 1)
-      }
-
-      frameCount += 1
       animRef.current = requestAnimationFrame(loop)
     }
 
@@ -137,76 +164,77 @@ export default function TimeWarpMirror({ onClose }: Props) {
       cancelAnimationFrame(animRef.current)
       window.removeEventListener('resize', resize)
     }
-  }, [captureFrame, delay, mode, paradoxMode, running, videoRef])
+  }, [running, layers, frozen])
 
   const handleStart = async () => {
-    frameBuffer.current = []
-    frozenFrameRef.current = null
-    await start()
+    await startVision()
     setRunning(true)
   }
 
   const handleStop = () => {
     setRunning(false)
-    stop()
-    frameBuffer.current = []
+    stopVision()
+    // Reset buffer
+    bufferRef.current.fill(null)
     frozenFrameRef.current = null
+    setFrozen(false)
     onClose()
   }
 
-  const toggleParadoxMode = () => {
-    setParadoxMode((value) => {
-      const next = !value
-      if (!next) frozenFrameRef.current = null
-      return next
-    })
-  }
+  const launchError = visionError ?? error
 
   return (
-    <div className="relative flex h-full w-full flex-col" style={{ minHeight: '60vh' }}>
-      <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
+    <div className="relative flex h-full w-full flex-col overflow-hidden bg-[#060610]" style={{ minHeight: '60vh' }}>
+      <div className="absolute left-4 top-4 z-20 flex items-center gap-2">
         {!running ? (
           <button onClick={handleStart} className="btn-hover flex items-center gap-2 rounded-full accent-gradient px-4 py-2 text-sm font-medium text-white">
             <Play className="h-4 w-4" /> Start
           </button>
         ) : (
-          <button onClick={handleStop} className="btn-hover flex items-center gap-2 rounded-full glass px-4 py-2 text-sm font-medium text-white">
-            <Square className="h-4 w-4" /> Stop
-          </button>
+          <>
+            <button onClick={handleStop} className="btn-hover flex items-center gap-2 rounded-full glass px-4 py-2 text-sm font-medium text-white">
+              <Square className="h-4 w-4" /> Stop
+            </button>
+            <div className="flex bg-black/40 rounded-full p-1 ml-4 items-center">
+              <Layers className="w-4 h-4 text-white/50 ml-2 mr-1" />
+              {([1, 2, 3] as const).map(l => (
+                <button
+                  key={l}
+                  onClick={() => setLayers(l)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition-colors ${
+                    layers === l ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  {l * 3}s Delay
+                </button>
+              ))}
+            </div>
+            <button 
+              onClick={() => {
+                if (frozen) frozenFrameRef.current = null;
+                setFrozen(!frozen)
+              }}
+              className={`ml-4 flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+                frozen ? 'bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.5)]' : 'glass text-white'
+              }`}
+            >
+              <Snowflake className="w-4 h-4" /> {frozen ? 'UNFREEZE GHOST' : 'FREEZE GHOST'}
+            </button>
+          </>
         )}
       </div>
 
-      {running && (
-        <>
-          <div className="absolute right-4 top-4 z-10 flex items-center gap-2 rounded-full glass px-3 py-1 text-xs text-white">
-            <Clock className="h-3.5 w-3.5" /> {delay}s delay
-          </div>
-          <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3 rounded-full glass px-4 py-2">
-            <SlidersHorizontal className="h-4 w-4 text-[var(--text-secondary)]" />
-            <input type="range" min="0.5" max="5" step="0.5" value={delay} onChange={(event) => setDelay(parseFloat(event.target.value))} className="w-24 accent-[var(--accent-color)]" />
-            {(['overlay', 'vertical', 'horizontal', 'pip'] as const).map((value) => (
-              <button key={value} onClick={() => setMode(value)} className={`rounded-full px-3 py-1 text-xs ${mode === value ? 'accent-gradient text-white' : 'glass text-[var(--text-secondary)]'}`}>
-                {value}
-              </button>
-            ))}
-            <button onClick={toggleParadoxMode} className={`rounded-full px-3 py-1 text-xs ${paradoxMode ? 'accent-gradient text-white' : 'glass text-[var(--text-secondary)]'}`}>
-              Paradox
-            </button>
-          </div>
-        </>
-      )}
-
-      <video ref={videoRef} className="absolute inset-0 h-full w-full object-cover opacity-0" playsInline muted />
-      <canvas ref={canvasRef} className="h-full w-full" style={{ minHeight: '60vh' }} />
+      <video ref={videoRef} className="absolute inset-0 h-10 w-10 opacity-0 pointer-events-none" playsInline muted />
+      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full z-10" />
 
       {!running && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/60">
-          <div className="p-8 text-center">
+        <div className="absolute inset-0 z-30 flex items-center justify-center rounded-2xl bg-black/60 backdrop-blur-sm">
+          <div className="p-8 text-center max-w-sm">
             <p className="mb-2 text-lg font-semibold text-white">Time Warp Mirror</p>
-            <p className="mb-4 text-sm text-white/70">See a delayed ghost, switch between overlay, vertical, horizontal, or PIP views, and lock a paradox snapshot.</p>
-            {error && <p className="mb-4 text-sm text-rose-300">{error}</p>}
+            <p className="mb-4 text-sm text-white/70">Dance with your own ghost. See your live self alongside delayed temporal echoes from up to 9 seconds in the past.</p>
+            {launchError && <p className="mb-4 text-sm text-rose-300">{launchError}</p>}
             <button onClick={handleStart} className="btn-hover rounded-full accent-gradient px-6 py-3 text-sm font-semibold text-white">
-              Start Camera
+              Enable Camera
             </button>
           </div>
         </div>

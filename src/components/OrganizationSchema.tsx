@@ -31,7 +31,7 @@ export default function OrganizationSchema() {
       name: 'Cynocyte Systems',
       description:
         'Cynocyte Systems is the interactive computer vision infrastructure division of Cynocyte, powering Play Labs and experimental AI platforms.',
-      url: 'https://cynocyte.vercel.app',
+      url: 'https://cynocyte.vercel.app/systems',
     },
     contactPoint: {
       '@type': 'ContactPoint',

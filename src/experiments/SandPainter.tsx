@@ -1,31 +1,30 @@
 import { useEffect, useRef, useState } from 'react'
 import { Play, RotateCcw, Square } from 'lucide-react'
 import { useVision } from '@/hooks/useVision'
-import { clamp, isPinching, toCanvasPoint, type Point } from '@/lib/landmarks'
+import { clamp, toCanvasPoint, type Point } from '@/lib/landmarks'
 
 interface Props {
   onClose: () => void
 }
 
-interface WebStrand {
+interface Particle {
   x: number
   y: number
   vx: number
   vy: number
   life: number
-  maxLife: number
-  points: Point[]
+  hue: number
 }
 
-export default function WebShooter({ onClose }: Props) {
+export default function SandPainter({ onClose }: Props) {
   const { videoRef, startVision, stopVision, detectFrame, visionError, error } = useVision({ hand: true })
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [running, setRunning] = useState(false)
-  const [score, setScore] = useState(0)
   const animRef = useRef<number>(0)
-  const websRef = useRef<WebStrand[]>([])
+  const particlesRef = useRef<Particle[]>([])
+  const dunesRef = useRef<number[]>([])
   const lastTipsRef = useRef<Point[]>([])
-  const pinchStateRef = useRef<boolean[]>([])
+  const hueRef = useRef(0)
 
   useEffect(() => {
     if (!running) return
@@ -40,19 +39,7 @@ export default function WebShooter({ onClose }: Props) {
     const resize = () => {
       canvas.width = canvas.offsetWidth
       canvas.height = canvas.offsetHeight
-    }
-
-    const spawnWeb = (tip: Point, velocity: Point) => {
-      websRef.current.push({
-        x: tip.x,
-        y: tip.y,
-        vx: clamp(velocity.x * 0.25, -10, 10),
-        vy: clamp(velocity.y * 0.25 - 6, -12, 6),
-        life: 1,
-        maxLife: 240,
-        points: [{ x: tip.x, y: tip.y }],
-      })
-      setScore((value) => value + 1)
+      dunesRef.current = new Array(Math.ceil(canvas.width / 4)).fill(canvas.height)
     }
 
     resize()
@@ -68,89 +55,102 @@ export default function WebShooter({ onClose }: Props) {
         ctx.drawImage(video, -w, 0, w, h)
         ctx.restore()
       } else {
-        ctx.fillStyle = '#0a0a1a'
+        ctx.fillStyle = '#060610'
         ctx.fillRect(0, 0, w, h)
       }
 
-      ctx.fillStyle = 'rgba(6, 6, 16, 0.18)'
+      ctx.fillStyle = 'rgba(6, 6, 16, 0.4)'
       ctx.fillRect(0, 0, w, h)
+
+      hueRef.current = (hueRef.current + 0.5) % 360
 
       const results = detectFrame(performance.now())
       const hands = results?.hand?.landmarks ?? []
 
       hands.forEach((landmarks, handIndex) => {
         const tip = toCanvasPoint(landmarks[8], w, h)
-        const thumb = toCanvasPoint(landmarks[4], w, h)
         const previousTip = lastTipsRef.current[handIndex] ?? tip
-        const velocity = {
-          x: tip.x - previousTip.x,
-          y: tip.y - previousTip.y,
-        }
-        const pinching = isPinching(landmarks, 0.44)
+        const velocity = Math.hypot(tip.x - previousTip.x, tip.y - previousTip.y)
 
-        if (pinching) {
-          spawnWeb(tip, velocity)
-        }
-
-        pinchStateRef.current[handIndex] = pinching
         lastTipsRef.current[handIndex] = tip
 
-        ctx.save()
-        ctx.lineWidth = 3
-        ctx.strokeStyle = pinching ? '#7df9ff' : 'rgba(255,255,255,0.55)'
-        ctx.beginPath()
-        ctx.moveTo(thumb.x, thumb.y)
-        ctx.lineTo(tip.x, tip.y)
-        ctx.stroke()
+        if (tip.y > 0 && tip.x > 0) {
+          const isExplosion = velocity > 15
+          const count = isExplosion ? 15 : 3
 
-        ctx.fillStyle = '#00ffff'
-        ctx.shadowBlur = 24
-        ctx.shadowColor = '#00ffff'
-        ctx.beginPath()
-        ctx.arc(tip.x, tip.y, pinching ? 10 : 7, 0, Math.PI * 2)
-        ctx.fill()
-        ctx.restore()
+          for (let i = 0; i < count; i++) {
+            particlesRef.current.push({
+              x: tip.x + (Math.random() - 0.5) * 10,
+              y: tip.y + (Math.random() - 0.5) * 10,
+              vx: isExplosion ? (Math.random() - 0.5) * velocity * 0.4 : (Math.random() - 0.5) * 2,
+              vy: isExplosion ? (Math.random() - 0.5) * velocity * 0.4 : Math.random() * 2,
+              life: 1,
+              hue: hueRef.current + (Math.random() - 0.5) * 20,
+            })
+          }
+
+          ctx.save()
+          ctx.fillStyle = `hsl(${hueRef.current}, 80%, 60%)`
+          ctx.shadowBlur = 15
+          ctx.shadowColor = `hsl(${hueRef.current}, 80%, 60%)`
+          ctx.beginPath()
+          ctx.arc(tip.x, tip.y, 8, 0, Math.PI * 2)
+          ctx.fill()
+          ctx.restore()
+        }
       })
 
-      const webs = websRef.current
-      for (let index = webs.length - 1; index >= 0; index -= 1) {
-        const web = webs[index]
-        web.vy += 0.15
-        web.x += web.vx
-        web.y += web.vy
+      const dunes = dunesRef.current
+      const duneWidth = 4
 
-        if (web.x < 0 || web.x > w) {
-          web.vx *= -0.6
-          web.x = clamp(web.x, 0, w)
-        }
-        if (web.y > h) {
-          web.vy *= -0.6
-          web.y = h
-        }
+      for (let i = particlesRef.current.length - 1; i >= 0; i--) {
+        const p = particlesRef.current[i]
+        p.vy += 0.2 // gravity
+        p.x += p.vx
+        p.y += p.vy
 
-        web.points.push({ x: web.x, y: web.y })
-        if (web.points.length > 24) web.points.shift()
-        web.life -= 1 / web.maxLife
-
-        if (web.life <= 0) {
-          webs.splice(index, 1)
+        const duneIndex = Math.floor(clamp(p.x / duneWidth, 0, dunes.length - 1))
+        
+        if (p.y >= dunes[duneIndex]) {
+          // Hit dune, increase dune height
+          dunes[duneIndex] -= 1
+          // Smooth adjacent dunes to create slopes
+          if (duneIndex > 0 && dunes[duneIndex - 1] > dunes[duneIndex] + 2) dunes[duneIndex - 1] -= 0.5
+          if (duneIndex < dunes.length - 1 && dunes[duneIndex + 1] > dunes[duneIndex] + 2) dunes[duneIndex + 1] -= 0.5
+          
+          particlesRef.current.splice(i, 1)
           continue
         }
 
-        ctx.save()
-        ctx.globalAlpha = web.life
-        ctx.strokeStyle = '#00ffff'
-        ctx.lineWidth = 2
-        ctx.shadowBlur = 14
-        ctx.shadowColor = '#00ffff'
+        ctx.fillStyle = `hsl(${p.hue}, 100%, 70%)`
+        ctx.shadowBlur = 10
+        ctx.shadowColor = ctx.fillStyle
         ctx.beginPath()
-        ctx.moveTo(web.points[0].x, web.points[0].y)
-        for (let pointIndex = 1; pointIndex < web.points.length; pointIndex += 1) {
-          ctx.lineTo(web.points[pointIndex].x, web.points[pointIndex].y)
-        }
-        ctx.stroke()
-        ctx.restore()
+        ctx.arc(p.x, p.y, 2, 0, Math.PI*2)
+        ctx.fill()
+        ctx.shadowBlur = 0
       }
+
+      // Draw dunes with extra glow
+      ctx.fillStyle = '#ffb347' // Base sand color
+      ctx.beginPath()
+      ctx.moveTo(0, h)
+      for (let i = 0; i < dunes.length; i++) {
+        ctx.lineTo(i * duneWidth, dunes[i])
+      }
+      ctx.lineTo(w, h)
+      
+      ctx.shadowBlur = 30
+      ctx.shadowColor = '#ffb347'
+      ctx.fill()
+      ctx.shadowBlur = 0
+      
+      // Dune gradient
+      const gradient = ctx.createLinearGradient(0, h - 100, 0, h)
+      gradient.addColorStop(0, 'rgba(255, 179, 71, 0.1)')
+      gradient.addColorStop(1, 'rgba(255, 179, 71, 0.8)')
+      ctx.fillStyle = gradient
+      ctx.fill()
 
       animRef.current = requestAnimationFrame(loop)
     }
@@ -170,15 +170,16 @@ export default function WebShooter({ onClose }: Props) {
   const handleStop = () => {
     setRunning(false)
     stopVision()
-    websRef.current = []
+    particlesRef.current = []
     lastTipsRef.current = []
-    pinchStateRef.current = []
     onClose()
   }
 
   const handleReset = () => {
-    websRef.current = []
-    setScore(0)
+    particlesRef.current = []
+    if (canvasRef.current) {
+      dunesRef.current = new Array(Math.ceil(canvasRef.current.width / 4)).fill(canvasRef.current.height)
+    }
   }
 
   const launchError = visionError ?? error
@@ -202,21 +203,17 @@ export default function WebShooter({ onClose }: Props) {
         )}
       </div>
 
-      <div className="absolute right-4 top-4 z-10 glass rounded-full px-3 py-1 text-xs text-[var(--text-secondary)]">
-        Webs: {score}
-      </div>
-
       <video ref={videoRef} className="absolute inset-0 h-full w-full object-cover opacity-0" playsInline muted />
       <canvas ref={canvasRef} className="h-full w-full" style={{ minHeight: '60vh' }} />
 
       {!running && (
         <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/60">
           <div className="p-8 text-center">
-            <p className="mb-2 text-lg font-semibold text-white">Web Shooter</p>
-            <p className="mb-4 text-sm text-white/70">Pinch thumb and index finger to fire webs. Move your hand while pinching to change the throw.</p>
+            <p className="mb-2 text-lg font-semibold text-white">Sand Painter</p>
+            <p className="mb-4 text-sm text-white/70">Create flowing sand art. Fast movements for explosions, slow for flow.</p>
             {launchError && <p className="mb-4 text-sm text-rose-300">{launchError}</p>}
             <button onClick={handleStart} className="btn-hover rounded-full accent-gradient px-6 py-3 text-sm font-semibold text-white">
-              Start Camera
+              Start
             </button>
           </div>
         </div>

@@ -4,6 +4,7 @@ import Home from '@/pages/Home'
 import Labs from '@/pages/Labs'
 import ExperimentDetail from '@/pages/ExperimentDetail'
 import About from '@/pages/About'
+import Systems from '@/pages/Systems'
 import ScrollToTop from '@/components/ScrollToTop'
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
         <Route path="/labs" element={<Labs />} />
         <Route path="/labs/:id" element={<ExperimentDetail />} />
         <Route path="/about" element={<About />} />
+        <Route path="/systems" element={<Systems />} />
       </Routes>
     </>
   )

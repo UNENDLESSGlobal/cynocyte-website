@@ -31,6 +31,68 @@ const PixelRain = lazy(() => import('@/experiments/PixelRain'))
 const HolographicTwin = lazy(() => import('@/experiments/HolographicTwin'))
 const GravityPainter = lazy(() => import('@/experiments/GravityPainter'))
 
+// Hand Tracking Batch (Phase 1)
+const MagicSpellcaster = lazy(() => import('@/experiments/MagicSpellcaster'))
+const PuppetMaster = lazy(() => import('@/experiments/PuppetMaster'))
+const SandPainter = lazy(() => import('@/experiments/SandPainter'))
+const InvisibleTouchscreen = lazy(() => import('@/experiments/InvisibleTouchscreen'))
+const OrigamiFolder = lazy(() => import('@/experiments/OrigamiFolder'))
+
+// Face & Mouth Batch (Phase 2)
+const VirtualPiano = lazy(() => import('@/experiments/VirtualPiano'))
+const FaceWarpSculptor = lazy(() => import('@/experiments/FaceWarpSculptor'))
+const LipSyncAnimator = lazy(() => import('@/experiments/LipSyncAnimator'))
+const BlowDetector = lazy(() => import('@/experiments/BlowDetector'))
+
+// Body Pose & Air Drums Batch (Phase 3)
+const AirDrums = lazy(() => import('@/experiments/AirDrums'))
+const ShadowFighter = lazy(() => import('@/experiments/ShadowFighter'))
+const MirrorDimension = lazy(() => import('@/experiments/MirrorDimension'))
+const FitnessRepCounter = lazy(() => import('@/experiments/FitnessRepCounter'))
+const DanceScoreMachine = lazy(() => import('@/experiments/DanceScoreMachine'))
+
+// Eye Tracking Batch (Phase 4)
+const GazeControlledUI = lazy(() => import('@/experiments/GazeControlledUI'))
+const AttentionHeatmap = lazy(() => import('@/experiments/AttentionHeatmap'))
+const EyeSynth = lazy(() => import('@/experiments/EyeSynth'))
+const IrisPortal = lazy(() => import('@/experiments/IrisPortal'))
+
+// Music & WebGL Batch (Phase 5)
+const FingerHarp = lazy(() => import('@/experiments/FingerHarp'))
+const BeatboxVisualizer = lazy(() => import('@/experiments/BeatboxVisualizer'))
+const AIJamPartner = lazy(() => import('@/experiments/AIJamPartner'))
+const Living3DSelfPortrait = lazy(() => import('@/experiments/Living3DSelfPortrait'))
+const PixelRain = lazy(() => import('@/experiments/PixelRain'))
+
+// Spatial AI & Games Batch (Phase 6)
+const SketchToWorld = lazy(() => import('@/experiments/SketchToWorld'))
+const FacePong = lazy(() => import('@/experiments/FacePong'))
+const MindMaze = lazy(() => import('@/experiments/MindMaze'))
+const TimeWarpMirror = lazy(() => import('@/experiments/TimeWarpMirror'))
+
+// Advanced Interactive Controls Batch (Phase 7)
+const HumanTheremin = lazy(() => import('@/experiments/HumanTheremin'))
+const GestureFighter2P = lazy(() => import('@/experiments/GestureFighter2P'))
+const AvatarMirror = lazy(() => import('@/experiments/AvatarMirror'))
+const FaceDJ = lazy(() => import('@/experiments/FaceDJ'))
+
+// Audio-Visual Simulation Batch (Phase 8)
+const EmotionKaraoke = lazy(() => import('@/experiments/EmotionKaraoke'))
+const InvisibleInstrumentOrchestra = lazy(() => import('@/experiments/InvisibleInstrumentOrchestra'))
+const BodyDJ = lazy(() => import('@/experiments/BodyDJ'))
+const SandDunePainter = lazy(() => import('@/experiments/SandDunePainter'))
+
+// Acoustic Ecology Batch (Phase 9)
+const FingerHarpBass = lazy(() => import('@/experiments/FingerHarpBass'))
+const RoomAmbianceGenerator = lazy(() => import('@/experiments/RoomAmbianceGenerator'))
+const VoiceLandscape = lazy(() => import('@/experiments/VoiceLandscape'))
+const SnapCounter = lazy(() => import('@/experiments/SnapCounter'))
+
+// Biometric & Grand Finale Batch (Phase 10)
+const HeadConductor = lazy(() => import('@/experiments/HeadConductor'))
+const BreathPacer = lazy(() => import('@/experiments/BreathPacer'))
+const NeuralMirror = lazy(() => import('@/experiments/NeuralMirror'))
+
 // Fallback loading component
 function ExperimentLoadingFallback() {
   return (
@@ -59,6 +121,48 @@ const experimentComponents: Record<string, React.ComponentType<{ onClose: () => 
   'pixel-rain': PixelRain,
   'holographic-twin': HolographicTwin,
   'gravity-painter': GravityPainter,
+  'magic-spellcaster': MagicSpellcaster,
+  'puppet-master': PuppetMaster,
+  'sand-painter': SandPainter,
+  'invisible-touchscreen': InvisibleTouchscreen,
+  'origami-folder': OrigamiFolder,
+  'virtual-piano': VirtualPiano,
+  'face-warp-sculptor': FaceWarpSculptor,
+  'lip-sync-animator': LipSyncAnimator,
+  'blow-detector': BlowDetector,
+  'air-drums': AirDrums,
+  'shadow-fighter': ShadowFighter,
+  'mirror-dimension': MirrorDimension,
+  'fitness-rep-counter': FitnessRepCounter,
+  'dance-score-machine': DanceScoreMachine,
+  'gaze-controlled-ui': GazeControlledUI,
+  'attention-heatmap': AttentionHeatmap,
+  'eye-synth': EyeSynth,
+  'iris-portal': IrisPortal,
+  'finger-harp': FingerHarp,
+  'beatbox-visualizer': BeatboxVisualizer,
+  'ai-jam-partner': AIJamPartner,
+  'living-3d-self-portrait': Living3DSelfPortrait,
+  'pixel-rain': PixelRain,
+  'sketch-to-world': SketchToWorld,
+  'face-pong': FacePong,
+  'mind-maze': MindMaze,
+  'time-warp-mirror': TimeWarpMirror,
+  'human-theremin': HumanTheremin,
+  'gesture-fighter-2p': GestureFighter2P,
+  'avatar-mirror': AvatarMirror,
+  'face-dj': FaceDJ,
+  'emotion-karaoke': EmotionKaraoke,
+  'invisible-instrument-orchestra': InvisibleInstrumentOrchestra,
+  'body-dj': BodyDJ,
+  'sand-dune-painter': SandDunePainter,
+  'finger-harp-bass': FingerHarpBass,
+  'room-ambiance-generator': RoomAmbianceGenerator,
+  'voice-landscape': VoiceLandscape,
+  'snap-counter': SnapCounter,
+  'head-conductor': HeadConductor,
+  'breath-pacer': BreathPacer,
+  'neural-mirror': NeuralMirror,
 }
 
 export default function ExperimentDetail() {

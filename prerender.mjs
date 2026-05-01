@@ -97,6 +97,31 @@ const STATIC_ROUTES = [
       },
     ],
   },
+  {
+    path: '/systems',
+    title: 'Systems | Cynocyte',
+    description: 'Cynocyte Systems builds intelligent digital systems, automation infrastructure, and scalable business technology for modern enterprises. A technology services division of Cynocyte under UNENDLESS.',
+    keywords: 'Cynocyte Systems, intelligent digital systems, automation infrastructure, business technology, website systems, custom digital infrastructure, scalable technology, enterprise automation, Cynocyte, UNENDLESS, Swarnadeep Mukherjee',
+    jsonLd: [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Cynocyte', item: SITE_URL },
+          { '@type': 'ListItem', position: 2, name: 'Systems', item: `${SITE_URL}/systems` },
+        ],
+      },
+      {
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: 'Cynocyte Systems',
+        url: `${SITE_URL}/systems`,
+        description: 'Cynocyte Systems builds intelligent digital systems, automation infrastructure, and scalable business technology for modern enterprises.',
+        parentOrganization: { '@type': 'Organization', name: 'Cynocyte', url: SITE_URL },
+        founder: { '@type': 'Person', name: 'Swarnadeep Mukherjee' },
+      },
+    ],
+  },
 ];
 
 // ─── Parse experiment data from source registry ─────────────────────────────

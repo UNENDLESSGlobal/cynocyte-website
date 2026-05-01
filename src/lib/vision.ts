@@ -82,7 +82,7 @@ export function getPoseLandmarker() {
           delegate: 'GPU',
         },
         runningMode: 'VIDEO',
-        numPoses: 1,
+        numPoses: 2,
       })
     )
     .catch((error) => {

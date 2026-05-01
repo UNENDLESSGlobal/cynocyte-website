@@ -35,6 +35,12 @@ export default function Footer() {
             >
               About
             </Link>
+            <Link
+              to="/systems"
+              className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            >
+              Cynocyte Systems
+            </Link>
             <a
               href="mailto:cynocyte@gmail.com"
               className="w-8 h-8 rounded-full glass flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"

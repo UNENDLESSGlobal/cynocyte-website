@@ -1,35 +1,35 @@
 import { useEffect, useRef, useState } from 'react'
-import { Play, RotateCcw, Trophy } from 'lucide-react'
+import { Play, Square, Trophy } from 'lucide-react'
 import { useVision } from '@/hooks/useVision'
-import { FACE_KEYPOINTS, clamp, toCanvasPoint } from '@/lib/landmarks'
+import * as Tone from 'tone'
+import { clamp } from '@/lib/landmarks'
 
 interface Props {
   onClose: () => void
 }
 
-type Difficulty = 'easy' | 'medium' | 'hard'
-
 export default function FacePong({ onClose }: Props) {
   const { videoRef, startVision, stopVision, detectFrame, visionError, error } = useVision({ face: true })
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [running, setRunning] = useState(false)
-  const [difficulty, setDifficulty] = useState<Difficulty>('medium')
-  const [playerScore, setPlayerScore] = useState(0)
-  const [cpuScore, setCpuScore] = useState(0)
-  const [gameOver, setGameOver] = useState(false)
+  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium')
   const animRef = useRef<number>(0)
-  const noseTargetRef = useRef(0.5)
-  const gameState = useRef({
-    ballX: 0,
-    ballY: 0,
-    ballVX: 3,
-    ballVY: -4,
-    paddleX: 0,
-    cpuX: 0,
+  
+  const synthRef = useRef<Tone.PolySynth | null>(null)
+
+  const stateRef = useRef({
+    playerScore: 0,
+    cpuScore: 0,
+    ball: { x: 400, y: 300, vx: 0, vy: 0, speed: 8 },
+    playerPaddle: { x: 400, w: 150 },
+    cpuPaddle: { x: 400, w: 150 },
+    state: 'serve', // 'serve' | 'playing' | 'gameover'
+    trails: [] as {x: number, y: number, life: number}[],
+    shake: 0
   })
 
   useEffect(() => {
-    if (!running || gameOver) return
+    if (!running) return
 
     const canvas = canvasRef.current
     const video = videoRef.current
@@ -38,178 +38,245 @@ export default function FacePong({ onClose }: Props) {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const settings = {
-      easy: { cpuLag: 0.05, speed: 3.2 },
-      medium: { cpuLag: 0.09, speed: 4.1 },
-      hard: { cpuLag: 0.14, speed: 5.1 },
-    }[difficulty]
-
     const resize = () => {
       canvas.width = canvas.offsetWidth
       canvas.height = canvas.offsetHeight
+      if (stateRef.current.state === 'serve') {
+        stateRef.current.ball.x = canvas.width / 2
+        stateRef.current.ball.y = canvas.height / 2
+      }
     }
-
     resize()
     window.addEventListener('resize', resize)
 
-    const state = gameState.current
-    state.ballX = canvas.width / 2
-    state.ballY = canvas.height / 2
-    state.ballVX = settings.speed * (Math.random() > 0.5 ? 1 : -1)
-    state.ballVY = -settings.speed
+    synthRef.current = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: 'square' },
+      envelope: { attack: 0.01, decay: 0.1, sustain: 0, release: 0.1 }
+    }).toDestination()
+    synthRef.current.volume.value = -10
+
+    let smoothNoseX = 0.5
+
+    const serve = (toPlayer: boolean) => {
+      const s = stateRef.current
+      s.state = 'playing'
+      s.ball.x = canvas.width / 2
+      s.ball.y = canvas.height / 2
+      s.ball.speed = difficulty === 'easy' ? 6 : difficulty === 'medium' ? 10 : 15
+      s.ball.vx = (Math.random() > 0.5 ? 1 : -1) * (s.ball.speed * 0.5)
+      s.ball.vy = (toPlayer ? 1 : -1) * s.ball.speed
+    }
+
+    const playSound = (note: string) => {
+      if (synthRef.current) synthRef.current.triggerAttackRelease(note, "16n")
+    }
 
     const loop = () => {
-      const width = canvas.width
-      const height = canvas.height
-      const paddleWidth = 120
-      const paddleHeight = 12
-      const ballRadius = 8
+      const w = canvas.width
+      const h = canvas.height
+      const s = stateRef.current
+
+      // Background with motion blur
+      ctx.fillStyle = 'rgba(10, 10, 20, 0.3)'
+      ctx.fillRect(0, 0, w, h)
+
+      // Screen Shake
+      ctx.save()
+      if (s.shake > 0) {
+        ctx.translate((Math.random()-0.5)*s.shake, (Math.random()-0.5)*s.shake)
+        s.shake *= 0.9
+        if (s.shake < 0.5) s.shake = 0
+      }
 
       if (video.readyState >= 2) {
         ctx.save()
+        ctx.globalAlpha = 0.15
         ctx.scale(-1, 1)
-        ctx.drawImage(video, -width, 0, width, height)
+        ctx.drawImage(video, -w, 0, w, h)
         ctx.restore()
-      } else {
-        ctx.fillStyle = '#060610'
-        ctx.fillRect(0, 0, width, height)
       }
 
-      ctx.fillStyle = 'rgba(6, 6, 16, 0.78)'
-      ctx.fillRect(0, 0, width, height)
+      // Track Face
+      const results = detectFrame(performance.now())
+      const face = results?.face?.faceLandmarks?.[0]
 
-      const face = detectFrame(performance.now())?.face?.faceLandmarks?.[0]
       if (face) {
-        const nose = toCanvasPoint(face[FACE_KEYPOINTS.noseTip], width, height)
-        noseTargetRef.current = clamp(nose.x / width, 0.05, 0.95)
+        // Nose tip is landmark 1
+        const nose = face[1]
+        // Exponential smoothing for stability
+        smoothNoseX += ((1 - nose.x) - smoothNoseX) * 0.2
+        // Map 0-1 to screen width with slight over-extension
+        s.playerPaddle.x = clamp((smoothNoseX - 0.5) * 1.5 + 0.5, 0, 1) * w
       }
 
-      state.paddleX += ((noseTargetRef.current * width - paddleWidth / 2) - state.paddleX) * 0.18
-      state.paddleX = clamp(state.paddleX, 0, width - paddleWidth)
+      if (s.state === 'playing') {
+        // CPU AI
+        const cpuSpeed = difficulty === 'easy' ? 4 : difficulty === 'medium' ? 8 : 14
+        if (s.ball.x > s.cpuPaddle.x + 20) s.cpuPaddle.x += cpuSpeed
+        else if (s.ball.x < s.cpuPaddle.x - 20) s.cpuPaddle.x -= cpuSpeed
 
-      const cpuTarget = state.ballX - paddleWidth / 2
-      state.cpuX += (cpuTarget - state.cpuX) * settings.cpuLag
-      state.cpuX = clamp(state.cpuX, 0, width - paddleWidth)
+        s.cpuPaddle.x = clamp(s.cpuPaddle.x, s.cpuPaddle.w/2, w - s.cpuPaddle.w/2)
+        s.playerPaddle.x = clamp(s.playerPaddle.x, s.playerPaddle.w/2, w - s.playerPaddle.w/2)
 
-      state.ballX += state.ballVX
-      state.ballY += state.ballVY
+        // Ball Physics
+        s.ball.x += s.ball.vx
+        s.ball.y += s.ball.vy
 
-      if (state.ballX < ballRadius || state.ballX > width - ballRadius) state.ballVX *= -1
+        // Wall collisions (Left/Right)
+        if (s.ball.x <= 10 || s.ball.x >= w - 10) {
+          s.ball.vx *= -1
+          s.ball.x = clamp(s.ball.x, 10, w - 10)
+          playSound('C3')
+        }
 
-      if (
-        state.ballY > height - paddleHeight - ballRadius &&
-        state.ballX > state.paddleX &&
-        state.ballX < state.paddleX + paddleWidth
-      ) {
-        state.ballVY = -Math.abs(state.ballVY) * 1.05
-        state.ballVX += (state.ballX - (state.paddleX + paddleWidth / 2)) / 30
-        state.ballVY = Math.max(-12, Math.min(-2, state.ballVY))
+        // Paddle collisions
+        // Player (Bottom)
+        if (s.ball.y >= h - 40 && s.ball.y <= h - 20 && s.ball.vy > 0) {
+          if (Math.abs(s.ball.x - s.playerPaddle.x) < s.playerPaddle.w/2 + 10) {
+            s.ball.vy *= -1
+            // Angle reflection based on hit position
+            const hitPos = (s.ball.x - s.playerPaddle.x) / (s.playerPaddle.w / 2)
+            s.ball.vx = hitPos * s.ball.speed * 0.8
+            s.ball.speed = Math.min(s.ball.speed * 1.05, 25) // Speed up
+            playSound('G4')
+            s.shake = 5
+            
+            // Add particles
+            for(let i=0; i<5; i++) s.trails.push({x: s.ball.x, y: s.ball.y, life: 2})
+          }
+        }
+
+        // CPU (Top)
+        if (s.ball.y <= 40 && s.ball.y >= 20 && s.ball.vy < 0) {
+          if (Math.abs(s.ball.x - s.cpuPaddle.x) < s.cpuPaddle.w/2 + 10) {
+            s.ball.vy *= -1
+            const hitPos = (s.ball.x - s.cpuPaddle.x) / (s.cpuPaddle.w / 2)
+            s.ball.vx = hitPos * s.ball.speed * 0.8
+            s.ball.speed = Math.min(s.ball.speed * 1.05, 25)
+            playSound('E4')
+            s.shake = 2
+          }
+        }
+
+        // Scoring
+        if (s.ball.y > h + 50) {
+          s.cpuScore++
+          playSound('A2')
+          s.shake = 15
+          if (s.cpuScore >= 5) s.state = 'gameover'
+          else { s.state = 'serve'; setTimeout(() => serve(false), 1000) }
+        } else if (s.ball.y < -50) {
+          s.playerScore++
+          playSound('C5')
+          s.shake = 15
+          if (s.playerScore >= 5) s.state = 'gameover'
+          else { s.state = 'serve'; setTimeout(() => serve(true), 1000) }
+        }
+
+        // Add trail
+        s.trails.push({x: s.ball.x, y: s.ball.y, life: 1})
       }
-      if (state.ballY < paddleHeight + ballRadius && state.ballX > state.cpuX && state.ballX < state.cpuX + paddleWidth) {
-        state.ballVY = Math.abs(state.ballVY) * 1.05
-      }
 
-      if (state.ballY > height + 20) {
-        setCpuScore((value) => {
-          const next = value + 1
-          if (next >= 5) setGameOver(true)
-          return next
-        })
-        state.ballX = width / 2
-        state.ballY = height / 2
-        state.ballVX = settings.speed * (Math.random() > 0.5 ? 1 : -1)
-        state.ballVY = -settings.speed
-      }
-
-      if (state.ballY < -20) {
-        setPlayerScore((value) => {
-          const next = value + 1
-          if (next >= 5) setGameOver(true)
-          return next
-        })
-        state.ballX = width / 2
-        state.ballY = height / 2
-        state.ballVX = settings.speed * (Math.random() > 0.5 ? 1 : -1)
-        state.ballVY = settings.speed
-      }
-
-      ctx.strokeStyle = 'rgba(0, 255, 255, 0.05)'
-      ctx.lineWidth = 1
-      for (let x = 0; x < width; x += 40) {
-        ctx.beginPath()
-        ctx.moveTo(x, 0)
-        ctx.lineTo(x, height)
-        ctx.stroke()
-      }
-      for (let y = 0; y < height; y += 40) {
-        ctx.beginPath()
-        ctx.moveTo(0, y)
-        ctx.lineTo(width, y)
-        ctx.stroke()
-      }
-
-      ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)'
+      // Draw Center Line
       ctx.setLineDash([10, 10])
       ctx.beginPath()
-      ctx.moveTo(0, height / 2)
-      ctx.lineTo(width, height / 2)
+      ctx.moveTo(0, h/2)
+      ctx.lineTo(w, h/2)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'
+      ctx.lineWidth = 4
       ctx.stroke()
       ctx.setLineDash([])
 
-      ctx.save()
-      ctx.shadowBlur = 15
-      ctx.shadowColor = '#00ffff'
-      ctx.fillStyle = '#00ffff'
-      ctx.fillRect(state.paddleX, height - paddleHeight - 4, paddleWidth, paddleHeight)
-      ctx.shadowColor = '#ff4444'
-      ctx.fillStyle = '#ff4444'
-      ctx.fillRect(state.cpuX, 4, paddleWidth, paddleHeight)
-      ctx.restore()
+      // Draw Scores
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
+      ctx.font = 'bold 120px sans-serif'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(s.cpuScore.toString(), w/2, h/4)
+      ctx.fillText(s.playerScore.toString(), w/2, h * 0.75)
 
-      ctx.save()
+      // Draw Trails
+      s.trails = s.trails.filter(t => t.life > 0)
+      ctx.beginPath()
+      if (s.trails.length > 0) ctx.moveTo(s.trails[0].x, s.trails[0].y)
+      s.trails.forEach(t => {
+        ctx.lineTo(t.x, t.y)
+        t.life -= 0.05
+      })
+      ctx.strokeStyle = `rgba(0, 255, 255, 0.5)`
+      ctx.lineWidth = 10
       ctx.shadowBlur = 20
       ctx.shadowColor = '#00ffff'
-      ctx.fillStyle = '#ffffff'
-      ctx.beginPath()
-      ctx.arc(state.ballX, state.ballY, ballRadius, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.globalAlpha = 0.3
-      for (let trail = 1; trail <= 6; trail += 1) {
+      ctx.stroke()
+
+      // Draw Ball
+      if (s.state !== 'gameover') {
         ctx.beginPath()
-        ctx.arc(state.ballX - state.ballVX * trail * 2, state.ballY - state.ballVY * trail * 2, ballRadius - trail, 0, Math.PI * 2)
+        ctx.arc(s.ball.x, s.ball.y, 10, 0, Math.PI * 2)
+        ctx.fillStyle = '#fff'
         ctx.fill()
       }
+
+      // Draw Paddles
+      const drawPaddle = (x: number, y: number, color: string) => {
+        ctx.fillStyle = color
+        ctx.shadowColor = color
+        ctx.shadowBlur = 15
+        ctx.beginPath()
+        ctx.roundRect(x - s.playerPaddle.w/2, y - 10, s.playerPaddle.w, 20, 10)
+        ctx.fill()
+        ctx.shadowBlur = 0
+      }
+
+      drawPaddle(s.cpuPaddle.x, 20, '#ff00ff') // CPU
+      drawPaddle(s.playerPaddle.x, h - 20, '#00ffff') // Player
+
+      if (s.state === 'gameover') {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)'
+        ctx.fillRect(0, 0, w, h)
+        ctx.fillStyle = s.playerScore >= 5 ? '#00ffff' : '#ff00ff'
+        ctx.font = 'bold 64px sans-serif'
+        ctx.fillText(s.playerScore >= 5 ? 'YOU WIN!' : 'CPU WINS', w/2, h/2)
+        
+        ctx.font = '24px sans-serif'
+        ctx.fillStyle = '#fff'
+        ctx.fillText('Move face to restart', w/2, h/2 + 60)
+        
+        // Restart condition
+        if (Math.abs(s.playerPaddle.x - w/2) > 200) {
+          s.playerScore = 0
+          s.cpuScore = 0
+          serve(true)
+        }
+      } else if (s.state === 'serve' && s.playerScore === 0 && s.cpuScore === 0) {
+         ctx.fillStyle = '#fff'
+         ctx.font = '24px sans-serif'
+         ctx.fillText('Get ready...', w/2, h/2 + 50)
+      }
+
       ctx.restore()
-
-      ctx.fillStyle = 'rgba(0, 255, 255, 0.6)'
-      ctx.font = 'bold 24px Space Grotesk, sans-serif'
-      ctx.textAlign = 'left'
-      ctx.fillText(String(playerScore), 20, height - 20)
-      ctx.fillStyle = 'rgba(255, 68, 68, 0.6)'
-      ctx.textAlign = 'right'
-      ctx.fillText(String(cpuScore), width - 20, 40)
-
-      ctx.fillStyle = 'rgba(255,255,255,0.62)'
-      ctx.font = '12px JetBrains Mono, monospace'
-      ctx.textAlign = 'center'
-      ctx.fillText('Move your nose left and right to control the paddle', width / 2, height - 20)
-
       animRef.current = requestAnimationFrame(loop)
     }
 
     animRef.current = requestAnimationFrame(loop)
+    
+    // Initial serve
+    setTimeout(() => serve(true), 2000)
+
     return () => {
       cancelAnimationFrame(animRef.current)
       window.removeEventListener('resize', resize)
+      if (synthRef.current) synthRef.current.dispose()
     }
-  }, [detectFrame, difficulty, gameOver, playerScore, running, cpuScore, videoRef])
+  }, [detectFrame, running, difficulty])
 
   const handleStart = async () => {
+    await Tone.start()
     await startVision()
+    stateRef.current.playerScore = 0
+    stateRef.current.cpuScore = 0
+    stateRef.current.state = 'serve'
     setRunning(true)
-    setGameOver(false)
-    setPlayerScore(0)
-    setCpuScore(0)
   }
 
   const handleStop = () => {
@@ -218,66 +285,52 @@ export default function FacePong({ onClose }: Props) {
     onClose()
   }
 
-  const handleReset = () => {
-    setPlayerScore(0)
-    setCpuScore(0)
-    setGameOver(false)
-  }
-
   const launchError = visionError ?? error
 
   return (
-    <div className="relative flex h-full w-full flex-col" style={{ minHeight: '60vh' }}>
-      <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
+    <div className="relative flex h-full w-full flex-col overflow-hidden bg-[#060610]" style={{ minHeight: '60vh' }}>
+      <div className="absolute left-4 top-4 z-20 flex items-center gap-2">
         {!running ? (
           <button onClick={handleStart} className="btn-hover flex items-center gap-2 rounded-full accent-gradient px-4 py-2 text-sm font-medium text-white">
             <Play className="h-4 w-4" /> Start
           </button>
         ) : (
-          <button onClick={handleStop} className="btn-hover flex items-center gap-2 rounded-full glass px-4 py-2 text-sm font-medium text-white">
-            Stop
-          </button>
+          <>
+            <button onClick={handleStop} className="btn-hover flex items-center gap-2 rounded-full glass px-4 py-2 text-sm font-medium text-white">
+              <Square className="h-4 w-4" /> Stop
+            </button>
+            <div className="flex bg-black/40 rounded-full p-1 ml-4">
+              {(['easy', 'medium', 'hard'] as const).map(d => (
+                <button
+                  key={d}
+                  onClick={() => setDifficulty(d)}
+                  className={`px-4 py-1.5 rounded-full text-xs font-medium capitalize transition-colors ${
+                    difficulty === d ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
       {running && (
-        <div className="absolute right-4 top-4 z-10 flex items-center gap-2 rounded-full glass px-3 py-2 text-xs text-white">
-          {(['easy', 'medium', 'hard'] as const).map((level) => (
-            <button
-              key={level}
-              onClick={() => setDifficulty(level)}
-              className={`rounded-full px-3 py-1 ${difficulty === level ? 'accent-gradient text-white' : 'text-white/70'}`}
-            >
-              {level}
-            </button>
-          ))}
+        <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full glass px-4 py-2 pointer-events-none">
+          <Trophy className="w-4 h-4 text-white/50 mr-2" />
+          <span className="text-xs font-medium text-white/80">Move your face left and right to control the paddle. First to 5 wins.</span>
         </div>
       )}
 
-      <video ref={videoRef} className="absolute inset-0 h-full w-full object-cover opacity-0" playsInline muted />
-      <canvas ref={canvasRef} className="h-full w-full" style={{ minHeight: '60vh' }} />
+      <video ref={videoRef} className="absolute inset-0 h-10 w-10 opacity-0 pointer-events-none" playsInline muted />
+      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full z-10" />
 
-      {gameOver && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/70">
-          <div className="p-8 text-center">
-            <Trophy className="mx-auto mb-4 h-12 w-12 text-[var(--accent-color)]" />
-            <p className="mb-2 text-2xl font-bold text-white">Game Over!</p>
-            <p className="mb-4 text-lg text-white/70">{playerScore >= 5 ? 'You Win!' : 'CPU Wins!'}</p>
-            <p className="mb-4 text-sm text-white/50">
-              {playerScore} - {cpuScore}
-            </p>
-            <button onClick={handleReset} className="btn-hover rounded-full accent-gradient px-6 py-3 text-sm font-semibold text-white">
-              Play Again
-            </button>
-          </div>
-        </div>
-      )}
-
-      {!running && !gameOver && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/60">
-          <div className="p-8 text-center">
+      {!running && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center rounded-2xl bg-black/60 backdrop-blur-sm">
+          <div className="p-8 text-center max-w-sm">
             <p className="mb-2 text-lg font-semibold text-white">Face Pong</p>
-            <p className="mb-4 text-sm text-white/70">Move your face left and right to steer the paddle. Choose difficulty after launch.</p>
+            <p className="mb-4 text-sm text-white/70">Classic Pong, but your nose controls the paddle. A fast-paced, neon-drenched arcade game.</p>
             {launchError && <p className="mb-4 text-sm text-rose-300">{launchError}</p>}
             <button onClick={handleStart} className="btn-hover rounded-full accent-gradient px-6 py-3 text-sm font-semibold text-white">
               Start Game

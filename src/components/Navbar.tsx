@@ -82,6 +82,12 @@ export default function Navbar() {
                 >
                   Contact
                 </button>
+                <Link
+                  to="/systems"
+                  className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                >
+                  Cynocyte Systems
+                </Link>
               </>
             )}
             {!isHome && (
@@ -97,6 +103,12 @@ export default function Navbar() {
                   className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                 >
                   About
+                </Link>
+                <Link
+                  to="/systems"
+                  className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                >
+                  Cynocyte Systems
                 </Link>
               </>
             )}
@@ -129,11 +141,13 @@ export default function Navbar() {
                 <button onClick={() => scrollToSection('products')} className="text-left px-4 py-3 rounded-xl text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-card)] transition-colors">Products</button>
                 <button onClick={() => scrollToSection('play-labs')} className="text-left px-4 py-3 rounded-xl text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-card)] transition-colors">Play Labs</button>
                 <button onClick={() => scrollToSection('contact')} className="text-left px-4 py-3 rounded-xl text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-card)] transition-colors">Contact</button>
+                <Link to="/systems" onClick={() => setMobileOpen(false)} className="px-4 py-3 rounded-xl text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-card)] transition-colors">Cynocyte Systems</Link>
               </>
             ) : (
               <>
                 <Link to="/" onClick={() => setMobileOpen(false)} className="px-4 py-3 rounded-xl text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-card)] transition-colors">Home</Link>
                 <Link to="/about" onClick={() => setMobileOpen(false)} className="px-4 py-3 rounded-xl text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-card)] transition-colors">About</Link>
+                <Link to="/systems" onClick={() => setMobileOpen(false)} className="px-4 py-3 rounded-xl text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-card)] transition-colors">Cynocyte Systems</Link>
               </>
             )}
           </div>
