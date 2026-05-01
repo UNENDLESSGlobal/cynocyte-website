@@ -1,21 +1,10 @@
 User-agent: *
 Allow: /
-Disallow: /node_modules/
-Disallow: /private/
-
-# Sitemaps
+# Priority crawl paths
+Allow: /labs
+Allow: /about
+Allow: /labs/
+# Sitemap location
 Sitemap: https://cynocyte.vercel.app/sitemap.xml
-
-# Crawl delay (in seconds)
+# Crawl-delay for politeness
 Crawl-delay: 1
-
-# Specific rules for Googlebot
-User-agent: Googlebot
-Allow: /
-Crawl-delay: 0
-
-# Specific rules for Bingbot
-User-agent: Bingbot
-Allow: /
-Crawl-delay: 1
-

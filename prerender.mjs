@@ -24,9 +24,9 @@ const SITE_URL = 'https://cynocyte.vercel.app';
 const STATIC_ROUTES = [
   {
     path: '/',
-    title: 'Cynocyte — Intelligent Products & Experimental AI Platforms',
-    description: 'Cynocyte builds intelligent products and experimental AI platforms. Powered by Cynocyte Systems, the interactive infrastructure division. Discover Cynocyte Play Labs: 55+ interactive AI experiments using computer vision and hand tracking, running entirely in your browser.',
-    keywords: 'Cynocyte, Cynocyte Systems, AI experiments, Play Labs, computer vision, hand tracking, face detection, pose estimation, interactive AI, MediaPipe, browser experiments',
+    title: 'Cynocyte',
+    description: 'Cynocyte builds intelligent products and experimental AI platforms. Explore Revisit, the student academic life manager, and Cynocyte Play Labs \u2014 55 browser-based AI experiments. Founded by Swarnadeep Mukherjee under UNENDLESS.',
+    keywords: 'cynocyte, cynocyte systems, unendless, swarnadeep mukherjee, revisit, student manager, student daily life management, student academic manager, academic planner, academic tracker, student productivity, AI experiments, computer vision browser, hand tracking, face detection, MediaPipe, interactive AI, browser AI, no download AI, play labs, AI platform, intelligent products, experimental platforms',
     jsonLd: [
       {
         '@context': 'https://schema.org',
@@ -58,9 +58,9 @@ const STATIC_ROUTES = [
   },
   {
     path: '/about',
-    title: 'About Cynocyte | Cynocyte',
-    description: 'Learn about Cynocyte and its interactive infrastructure division, Cynocyte Systems. Discover Cynocyte Play Labs: 55 browser-based AI experiments using MediaPipe, Three.js, and Tone.js.',
-    keywords: 'Cynocyte, Cynocyte Systems, Play Labs, AI experiments, computer vision, hand tracking, browser-based AI, MediaPipe, educational AI',
+    title: 'About | Cynocyte',
+    description: 'Cynocyte is a technology company under UNENDLESS, building intelligent products and AI platforms. Learn about Cynocyte Systems, Revisit, and founder Swarnadeep Mukherjee.',
+    keywords: 'Cynocyte, Cynocyte Systems, Play Labs, AI experiments, computer vision, hand tracking, browser-based AI, MediaPipe, educational AI, swarnadeep mukherjee, cynocyte founder, unendless, revisit app developer',
     jsonLd: [
       {
         '@context': 'https://schema.org',
@@ -83,9 +83,9 @@ const STATIC_ROUTES = [
   },
   {
     path: '/labs',
-    title: 'Cynocyte Play Labs — 55 Interactive AI Experiments | Cynocyte',
-    description: 'Explore 55 interactive AI experiments powered by Cynocyte Systems: hand tracking, face detection, pose estimation, music synthesis, and more. Run entirely in your browser.',
-    keywords: 'Cynocyte, Cynocyte Systems, Play Labs, AI experiments, hand tracking, face detection, pose estimation, music synthesis, computer vision, interactive AI',
+    title: 'Play Labs | Cynocyte',
+    description: 'Explore 55 interactive browser AI experiments by Cynocyte. Hand tracking, face detection, music synthesis \u2014 no download required. Powered by Cynocyte Systems.',
+    keywords: 'Cynocyte, Cynocyte Systems, Play Labs, AI experiments, hand tracking, face detection, pose estimation, music synthesis, computer vision, interactive AI, browser AI, no download AI',
     jsonLd: [
       {
         '@context': 'https://schema.org',
@@ -127,8 +127,8 @@ function getExperimentRoutes() {
 
       routes.push({
         path: `/labs/${id}`,
-        title: `${title} — Cynocyte Play Labs | Cynocyte`,
-        description: `${description} Interactive ${category} experiment from Cynocyte Play Labs, powered by Cynocyte Systems.`,
+        title: `${title} | Cynocyte`,
+        description: `${description} Interactive AI experiment by Cynocyte Systems.`,
         keywords: `${title}, ${category}, Cynocyte, Cynocyte Systems, AI experiments, Play Labs, ${tagline}`,
         jsonLd: [
           {

@@ -14,11 +14,10 @@ export default function Home() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       <SEO
-        title="Cynocyte — Intelligent Products & Experimental AI Platforms"
-        description="Cynocyte builds intelligent products and experimental AI platforms. Powered by Cynocyte Systems, the interactive infrastructure division. Discover Cynocyte Play Labs: 55+ interactive AI experiments using computer vision and hand tracking, running entirely in your browser."
+        title="Cynocyte"
+        description="Cynocyte builds intelligent products and experimental AI platforms. Explore Revisit, the student academic life manager, and Cynocyte Play Labs — 55 browser-based AI experiments. Founded by Swarnadeep Mukherjee under UNENDLESS."
         canonicalUrl="https://cynocyte.vercel.app"
         ogImage="https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
-        keywords="Cynocyte, Cynocyte Systems, AI experiments, Play Labs, computer vision, hand tracking, face detection, pose estimation, interactive AI, MediaPipe, browser experiments"
       />
       <BreadcrumbSchema
         items={[
@@ -48,6 +47,24 @@ export default function Home() {
         </div>
       </main>
       <Footer />
+      {/* SEO keyword signal block — visually hidden, screen-reader accessible */}
+      <aside
+        aria-hidden="false"
+        className="sr-only"
+        style={{ position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' }}
+      >
+        <h2>Cynocyte by Swarnadeep Mukherjee — A Division of UNENDLESS</h2>
+        <p>
+          Cynocyte is a technology company under UNENDLESS that builds intelligent products 
+          and experimental AI platforms. Cynocyte Systems is the interactive computer vision 
+          infrastructure division. Revisit is a student daily life management app for academic 
+          planning, habit tracking, smart scheduling, study session timing, grade calculation, 
+          and class timetable management — the complete student manager and academic planner. 
+          Cynocyte Play Labs offers 55 browser-based AI experiments using MediaPipe, Three.js, 
+          and Tone.js with hand tracking, face detection, pose estimation, and music synthesis. 
+          Founded and developed by Swarnadeep Mukherjee.
+        </p>
+      </aside>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Hexagon, Sparkles, Cpu, Mail, ArrowRight, ExternalLink } from 'lucide-react'
+import { Helmet } from 'react-helmet-async'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import SEO from '@/components/SEO'
@@ -12,11 +13,11 @@ export default function About() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       <SEO
-        title="About Cynocyte | Cynocyte"
-        description="Learn about Cynocyte and its interactive infrastructure division, Cynocyte Systems. Discover Cynocyte Play Labs: 55 browser-based AI experiments using MediaPipe, Three.js, and Tone.js."
+        title="About | Cynocyte"
+        description="Cynocyte is a technology company under UNENDLESS, building intelligent products and AI platforms. Learn about Cynocyte Systems, Revisit, and founder Swarnadeep Mukherjee."
         canonicalUrl="https://cynocyte.vercel.app/about"
         ogImage="https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
-        keywords="Cynocyte, Cynocyte Systems, Play Labs, AI experiments, computer vision, hand tracking, browser-based AI, MediaPipe, educational AI"
+        keywords="Cynocyte, Cynocyte Systems, Play Labs, AI experiments, computer vision, hand tracking, browser-based AI, MediaPipe, educational AI, swarnadeep mukherjee, cynocyte founder, unendless, revisit app developer"
       />
       <BreadcrumbSchema
         items={[
@@ -25,6 +26,13 @@ export default function About() {
         ]}
       />
       <PersonSchema />
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SpeakableSpecification",
+          "cssSelector": ["h1", "p:first-of-type"]
+        })}</script>
+      </Helmet>
       <Navbar />
 
       <main className="pt-24 pb-16">
