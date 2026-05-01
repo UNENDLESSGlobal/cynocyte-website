@@ -58,17 +58,12 @@ const EyeSynth = lazy(() => import('@/experiments/EyeSynth'))
 const IrisPortal = lazy(() => import('@/experiments/IrisPortal'))
 
 // Music & WebGL Batch (Phase 5)
-const FingerHarp = lazy(() => import('@/experiments/FingerHarp'))
-const BeatboxVisualizer = lazy(() => import('@/experiments/BeatboxVisualizer'))
 const AIJamPartner = lazy(() => import('@/experiments/AIJamPartner'))
 const Living3DSelfPortrait = lazy(() => import('@/experiments/Living3DSelfPortrait'))
-const PixelRain = lazy(() => import('@/experiments/PixelRain'))
 
 // Spatial AI & Games Batch (Phase 6)
 const SketchToWorld = lazy(() => import('@/experiments/SketchToWorld'))
-const FacePong = lazy(() => import('@/experiments/FacePong'))
 const MindMaze = lazy(() => import('@/experiments/MindMaze'))
-const TimeWarpMirror = lazy(() => import('@/experiments/TimeWarpMirror'))
 
 // Advanced Interactive Controls Batch (Phase 7)
 const HumanTheremin = lazy(() => import('@/experiments/HumanTheremin'))
@@ -139,15 +134,10 @@ const experimentComponents: Record<string, React.ComponentType<{ onClose: () => 
   'attention-heatmap': AttentionHeatmap,
   'eye-synth': EyeSynth,
   'iris-portal': IrisPortal,
-  'finger-harp': FingerHarp,
-  'beatbox-visualizer': BeatboxVisualizer,
   'ai-jam-partner': AIJamPartner,
   'living-3d-self-portrait': Living3DSelfPortrait,
-  'pixel-rain': PixelRain,
   'sketch-to-world': SketchToWorld,
-  'face-pong': FacePong,
   'mind-maze': MindMaze,
-  'time-warp-mirror': TimeWarpMirror,
   'human-theremin': HumanTheremin,
   'gesture-fighter-2p': GestureFighter2P,
   'avatar-mirror': AvatarMirror,

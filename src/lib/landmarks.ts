@@ -167,3 +167,73 @@ export function getPosePoint(
 function distanceXY(a: LandmarkLike, b: LandmarkLike) {
   return Math.hypot(a.x - b.x, a.y - b.y)
 }
+
+export function drawPoseSkeleton(
+  ctx: CanvasRenderingContext2D,
+  pose: LandmarkLike[],
+  options: {
+    color?: string
+    lineWidth?: number
+    glow?: boolean
+    width?: number
+    height?: number
+  } = {},
+) {
+  const {
+    color = '#ffffff',
+    lineWidth = 2,
+    glow = false,
+    width = ctx.canvas.width,
+    height = ctx.canvas.height,
+  } = options
+
+  ctx.save()
+  ctx.strokeStyle = color
+  ctx.lineWidth = lineWidth
+  ctx.lineCap = 'round'
+  ctx.lineJoin = 'round'
+
+  if (glow) {
+    ctx.shadowColor = color
+    ctx.shadowBlur = 10
+  }
+
+  // Draw segments
+  for (const [start, end] of POSE_SEGMENTS) {
+    const startLandmark = pose[start]
+    const endLandmark = pose[end]
+
+    if (
+      !startLandmark ||
+      !endLandmark ||
+      (startLandmark.visibility ?? 1) < 0.4 ||
+      (endLandmark.visibility ?? 1) < 0.4
+    ) {
+      continue
+    }
+
+    const startPoint = toCanvasPoint(startLandmark, width, height, false)
+    const endPoint = toCanvasPoint(endLandmark, width, height, false)
+
+    ctx.beginPath()
+    ctx.moveTo(startPoint.x, startPoint.y)
+    ctx.lineTo(endPoint.x, endPoint.y)
+    ctx.stroke()
+  }
+
+  // Draw joints (keypoints)
+  ctx.fillStyle = color
+  const radius = lineWidth * 1.5
+
+  for (let i = 0; i < pose.length; i++) {
+    const landmark = pose[i]
+    if (!landmark || (landmark.visibility ?? 1) < 0.4) continue
+
+    const point = toCanvasPoint(landmark, width, height, false)
+    ctx.beginPath()
+    ctx.arc(point.x, point.y, radius, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  ctx.restore()
+}

@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion'
 import { ArrowRight, Sparkles, Code2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useThemeStore } from '@/stores/themeStore'
 
 export default function Hero() {
+  const theme = useThemeStore((s) => s.theme)
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
       <div className="absolute inset-0 pointer-events-none">
@@ -42,6 +44,7 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
           className="text-lg sm:text-xl text-[var(--text-secondary)] max-w-2xl mx-auto mb-10 leading-relaxed"
+          style={{ color: theme === 'dark' ? '#222222' : undefined }}
         >
           Cynocyte crafts intelligent products and experimental platforms
           that push the boundaries of what technology can do.

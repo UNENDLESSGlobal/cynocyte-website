@@ -239,7 +239,7 @@ export default function InvisibleTouchscreen({ onClose }: Props) {
                     className="w-16 h-16 rounded-2xl flex items-center justify-center transition-shadow"
                     style={{ 
                       backgroundColor: app.color,
-                      boxShadow: isHovered ? \`0 0 30px \${app.color}80\` : 'none'
+                      boxShadow: isHovered ? `0 0 30px ${app.color}80` : 'none'
                     }}
                   >
                     <Icon className="w-8 h-8 text-white" />
