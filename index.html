@@ -106,95 +106,28 @@
       });
     </script>
     
-    <!-- Structured Data: Organization (full hierarchy) -->
+    <!-- Structured Data: Organization (bidirectional link to UNENDLESS parent) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Organization",
       "@id": "https://cynocyte.vercel.app/#organization",
       "name": "Cynocyte",
-      "alternateName": ["Cynocyte Systems", "Cynocyte Play Labs"],
-      "url": "https://cynocyte.vercel.app",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png",
-        "width": 1200,
-        "height": 630
-      },
-      "description": "Cynocyte is a technology company under UNENDLESS that builds intelligent products and experimental AI platforms. Products include Revisit (student academic life management) and Cynocyte Play Labs (55+ browser-based AI experiments).",
-      "slogan": "Building the Future of Intelligence",
+      "url": "https://cynocyte.vercel.app/",
+      "description": "An interactive computing company pushing the frontier of browser-based AI and zero-latency vision models.",
       "founder": {
-        "@type": "Person",
-        "@id": "https://cynocyte.vercel.app/about/#founder",
-        "name": "Swarnadeep Mukherjee",
-        "jobTitle": "Founder & Developer",
-        "url": "https://cynocyte.vercel.app/about"
+        "@id": "https://unendless.vercel.app/#founder"
       },
       "parentOrganization": {
-        "@type": "Organization",
-        "name": "UNENDLESS",
-        "url": "https://cynocyte.vercel.app"
-      },
-      "subOrganization": {
-        "@type": "Organization",
-        "name": "Cynocyte Systems",
-        "description": "Interactive computer vision infrastructure and AI services division of Cynocyte",
-        "url": "https://cynocyte.vercel.app/systems"
-      },
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "email": "cynocyte@gmail.com",
-        "contactType": "Customer Support",
-        "availableLanguage": "English"
+        "@id": "https://unendless.vercel.app/#organization"
       },
       "sameAs": [
-        "https://twitter.com/cynocyte",
-        "https://github.com/cynocyte",
         "https://www.instagram.com/cynocyte/",
-        "https://www.youtube.com/@Cynocyte"
-      ],
-      "knowsAbout": [
-        "Artificial Intelligence",
-        "Computer Vision",
-        "Hand Tracking",
-        "Face Detection",
-        "Student Academic Management",
-        "Browser-based AI",
-        "MediaPipe",
-        "Three.js",
-        "Interactive Web Experiments"
-      ],
-      "address": {
-        "@type": "PostalAddress",
-        "addressCountry": "IN"
-      },
-      "hasOfferCatalog": {
-        "@type": "OfferCatalog",
-        "name": "Cynocyte Products",
-        "itemListElement": [
-          {
-            "@type": "Offer",
-            "itemOffered": {
-              "@type": "SoftwareApplication",
-              "name": "Revisit",
-              "applicationCategory": "EducationApplication",
-              "description": "Student daily life management app for academic planning, habit tracking, scheduling, and productivity",
-              "url": "https://getrevisit.vercel.app",
-              "keywords": "student manager, academic planner, student daily life management, study tracker, habit tracker for students, grade calculator, class timetable"
-            }
-          },
-          {
-            "@type": "Offer",
-            "itemOffered": {
-              "@type": "WebApplication",
-              "name": "Cynocyte Play Labs",
-              "applicationCategory": "EntertainmentApplication",
-              "description": "55 browser-based interactive AI experiments using computer vision, hand tracking, face detection, and music synthesis",
-              "url": "https://cynocyte.vercel.app/labs"
-            }
-          }
-        ]
-      }
+        "https://x.com/cynocyte",
+        "https://www.youtube.com/@cynocyte",
+        "https://www.reddit.com/user/cynocyte/",
+        "https://www.threads.net/@cynocyte"
+      ]
     }
     </script>
 
