@@ -199,7 +199,7 @@ export default function ExperimentDetail() {
         title={`${experiment.title} — Cynocyte Play Labs | Cynocyte`}
         description={`${experiment.description} Interactive ${experiment.category} experiment from Cynocyte Play Labs, powered by Cynocyte Systems.`}
         canonicalUrl={`https://cynocyte.vercel.app/labs/${experiment.id}`}
-        ogImage="https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
+        ogImage="https://cynocyte.vercel.app/logos/cynocyte-long-logo-for-dark-theme.png"
         keywords={`${experiment.title}, ${experiment.category}, Cynocyte, Cynocyte Systems, AI experiments, Play Labs, ${experiment.tagline}`}
       />
       <BreadcrumbSchema

@@ -8,12 +8,12 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <img
-              src="/logos/cynocyte%20logo%20for%20light%20theme.png"
+              src="/logos/cynocyte-logo-for-light-theme.png"
               alt="Cynocyte"
               className="h-6 w-6 dark:hidden"
             />
             <img
-              src="/logos/logo%20light%20no%20background.png"
+              src="/logos/logo-light-no-background.png"
               alt="Cynocyte"
               className="h-6 w-6 hidden dark:block"
             />

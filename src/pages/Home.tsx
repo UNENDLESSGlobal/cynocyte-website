@@ -17,7 +17,7 @@ export default function Home() {
         title="Cynocyte"
         description="Cynocyte builds intelligent products and experimental AI platforms. Explore Revisit, the student academic life manager, and Cynocyte Play Labs — 55 browser-based AI experiments. Founded by Swarnadeep Mukherjee under UNENDLESS."
         canonicalUrl="https://cynocyte.vercel.app"
-        ogImage="https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
+        ogImage="https://cynocyte.vercel.app/logos/cynocyte-long-logo-for-dark-theme.png"
       />
       <BreadcrumbSchema
         items={[

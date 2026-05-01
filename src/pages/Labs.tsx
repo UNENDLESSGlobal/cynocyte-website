@@ -62,7 +62,7 @@ export default function Labs() {
         title="Cynocyte Play Labs — 55 Interactive AI Experiments | Cynocyte"
         description="Explore 55 interactive AI experiments powered by Cynocyte Systems: hand tracking, face detection, pose estimation, music synthesis, and more. Run entirely in your browser."
         canonicalUrl="https://cynocyte.vercel.app/labs"
-        ogImage="https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
+        ogImage="https://cynocyte.vercel.app/logos/cynocyte-long-logo-for-dark-theme.png"
         keywords="Cynocyte, Cynocyte Systems, Play Labs, AI experiments, hand tracking, face detection, pose estimation, music synthesis, computer vision, interactive AI"
       />
       <BreadcrumbSchema

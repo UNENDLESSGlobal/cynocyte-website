@@ -10,7 +10,7 @@
   "background_color": "#0A0A1A",
   "screenshots": [
     {
-      "src": "/logos/cynocyte%20long%20logo%20for%20dark%20theme.png",
+      "src": "/logos/cynocyte-long-logo-for-dark-theme.png",
       "sizes": "1200x630",
       "type": "image/png",
       "purpose": "any"
@@ -18,13 +18,13 @@
   ],
   "icons": [
     {
-      "src": "/logos/round%20logo%20without%20background.png",
+      "src": "/logos/round-logo-without-background.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/logos/round%20logo%20without%20background.png",
+      "src": "/logos/round-logo-without-background.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
@@ -33,7 +33,7 @@
   "categories": ["productivity", "education"],
   "screenshots": [
     {
-      "src": "/logos/cynocyte%20long%20logo%20for%20dark%20theme.png",
+      "src": "/logos/cynocyte-long-logo-for-dark-theme.png",
       "sizes": "1280x720",
       "type": "image/png"
     }

@@ -41,14 +41,14 @@ export default function ExperimentStructuredData({
       '@type': 'Organization',
       name: 'Cynocyte',
       url: 'https://cynocyte.vercel.app',
-      logo: 'https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png',
+      logo: 'https://cynocyte.vercel.app/logos/cynocyte-long-logo-for-dark-theme.png',
     },
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue: '4.5',
       ratingCount: '100',
     },
-    screenshot: 'https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png',
+    screenshot: 'https://cynocyte.vercel.app/logos/cynocyte-long-logo-for-dark-theme.png',
     softwareRequirements: {
       '@type': 'SoftwareApplication',
       name: 'Modern Web Browser',

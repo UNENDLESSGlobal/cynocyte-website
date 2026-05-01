@@ -25,7 +25,7 @@ export default function SEO({
   title = 'Cynocyte',
   description = 'Cynocyte builds intelligent products and experimental AI platforms. Explore Revisit for academic life management and Cynocyte Play Labs for 55+ interactive browser AI experiences. A division of UNENDLESS.',
   canonicalUrl = 'https://cynocyte.vercel.app',
-  ogImage = 'https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png',
+  ogImage = 'https://cynocyte.vercel.app/logos/cynocyte-long-logo-for-dark-theme.png',
   ogType = 'website',
   keywords = HIDDEN_KEYWORDS,
   author = 'Cynocyte',

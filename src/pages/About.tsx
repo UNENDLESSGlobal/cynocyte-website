@@ -16,7 +16,7 @@ export default function About() {
         title="About | Cynocyte"
         description="Cynocyte is a technology company under UNENDLESS, building intelligent products and AI platforms. Learn about Cynocyte Systems, Revisit, and founder Swarnadeep Mukherjee."
         canonicalUrl="https://cynocyte.vercel.app/about"
-        ogImage="https://cynocyte.vercel.app/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
+        ogImage="https://cynocyte.vercel.app/logos/cynocyte-long-logo-for-dark-theme.png"
         keywords="Cynocyte, Cynocyte Systems, Play Labs, AI experiments, computer vision, hand tracking, browser-based AI, MediaPipe, educational AI, swarnadeep mukherjee, cynocyte founder, unendless, revisit app developer"
       />
       <BreadcrumbSchema

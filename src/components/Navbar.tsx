@@ -34,22 +34,22 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-3 shrink-0">
             <img
-              src="/logos/cynocyte%20logo%20for%20light%20theme.png"
+              src="/logos/cynocyte-logo-for-light-theme.png"
               alt="Cynocyte"
               className="h-8 w-8 dark:hidden"
             />
             <img
-              src="/logos/logo%20light%20no%20background.png"
+              src="/logos/logo-light-no-background.png"
               alt="Cynocyte"
               className="h-8 w-8 hidden dark:block"
             />
             <img
-              src="/logos/cynocyte%20long%20logo%20for%20light%20theme.png"
+              src="/logos/cynocyte-long-logo-for-light-theme.png"
               alt="Cynocyte"
               className="h-6 dark:hidden"
             />
             <img
-              src="/logos/cynocyte%20long%20logo%20for%20dark%20theme.png"
+              src="/logos/cynocyte-long-logo-for-dark-theme.png"
               alt="Cynocyte"
               className="h-6 hidden dark:block"
             />
