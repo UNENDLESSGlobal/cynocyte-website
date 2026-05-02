@@ -77,26 +77,6 @@ export default function Hero() {
             Learn More
           </button>
         </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="mt-16 flex items-center justify-center gap-8 sm:gap-12 text-[var(--text-secondary)]"
-        >
-          {[
-            { label: 'Products', value: '2+' },
-            { label: 'AI Experiments', value: '55' },
-            { label: 'Users Worldwide', value: '10K+' },
-          ].map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)]" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                {stat.value}
-              </div>
-              <div className="text-xs sm:text-sm mt-1">{stat.label}</div>
-            </div>
-          ))}
-        </motion.div>
       </div>
     </section>
   )

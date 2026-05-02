@@ -115,7 +115,7 @@
     });
   </script>
 
-  <!-- Structured Data: Organization (bidirectional link to UNENDLESS parent) -->
+  <!-- Structured Data: Master Ecosystem Organization -->
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -124,18 +124,45 @@
       "name": "Cynocyte",
       "url": "https://cynocyte.vercel.app/",
       "description": "An interactive computing company pushing the frontier of browser-based AI and zero-latency vision models.",
-      "founder": {
-        "@id": "https://unendless.vercel.app/#founder"
-      },
-      "parentOrganization": {
-        "@id": "https://unendless.vercel.app/#organization"
-      },
       "sameAs": [
         "https://www.instagram.com/cynocyte/",
+        "https://www.instagram.com/cynocyteindia/",
         "https://x.com/cynocyte",
         "https://www.youtube.com/@cynocyte",
         "https://www.reddit.com/user/cynocyte/",
         "https://www.threads.net/@cynocyte"
+      ],
+      "founder": {
+        "@type": "Person",
+        "@id": "https://unendless.vercel.app/#founder",
+        "name": "Swarnadeep Mukherjee",
+        "sameAs": [
+          "https://www.linkedin.com/in/swarnadeepmukherjee-unendless/",
+          "https://x.com/theswarnadeep_",
+          "https://www.instagram.com/theswarnadeep_/",
+          "https://www.threads.net/@theswarnadeep_",
+          "https://www.reddit.com/user/SwarnadeepMukherjee/"
+        ]
+      },
+      "parentOrganization": {
+        "@type": "Organization",
+        "@id": "https://unendless.vercel.app/#organization",
+        "name": "UNENDLESS",
+        "url": "https://unendless.vercel.app/",
+        "sameAs": [
+          "https://www.instagram.com/unendless.global/"
+        ]
+      },
+      "subOrganization": [
+        {
+          "@type": "Organization",
+          "@id": "https://cynocyte.vercel.app/#systems",
+          "name": "Cynocyte Systems",
+          "url": "https://cynocyte.vercel.app/systems",
+          "sameAs": [
+            "https://www.instagram.com/cynocytesystems/"
+          ]
+        }
       ]
     }
     </script>
@@ -166,8 +193,6 @@
       ]
     }
     </script>
-
-
 
   <!-- Structured Data: SoftwareApplication (Revisit) -->
   <script type="application/ld+json">
